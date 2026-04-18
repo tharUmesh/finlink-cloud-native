@@ -28,16 +28,20 @@ FinLink is an AI-powered inclusive digital payments and micro-lending platform d
 
 - Client: React Native + Expo mobile app
 - API Layer: Azure API Management
-- Compute: Azure Kubernetes Service (AKS) for Node.js microservices
+- Compute: Azure Container Apps (ACA) Environment for Node.js container apps
 - Async Messaging: Azure Service Bus (queues/topics)
 - Data: PostgreSQL + Cosmos DB
 - Security: Microsoft Entra ID (B2C), Key Vault, RBAC, encryption
 - Observability: Azure Monitor + Application Insights + Log Analytics
-- DevOps: Terraform + GitHub Actions
+- DevOps: Terraform + GitHub Actions + ACR image delivery
+
+## Architecture Diagram
+
+![FinLink ACA Architecture](docs/azure_mobile_app_architecture_v2.png)
 
 Architecture reference:
 - Full details: `docs/SYSTEM_ARCHITECTURE.md`
-- Diagram image: `docs/azure_microservices_architecture.png`
+- Diagram image: `docs/azure_mobile_app_architecture_v2.png`
 
 ## Microservices
 
@@ -69,12 +73,12 @@ finlink-cloud-native/
 |     |- Dockerfile
 |- infrastructure/
 |  |- main.tf
-|  |- aks.tf
+|  |- aks.tf (placeholder, rename to aca.tf)
 |- datasets/
 |  |- README.md
 |- docs/
 |  |- SYSTEM_ARCHITECTURE.md
-|  |- azure_microservices_architecture.png
+|  |- azure_mobile_app_architecture_v2.png
 |  |- report.md
 |- .github/
 |  |- workflows/
@@ -86,7 +90,7 @@ finlink-cloud-native/
 
 - Person 1: Mobile Frontend (React Native + Expo)
 - Person 2: Backend microservices and APIs
-- Person 3: DevOps/Cloud (Terraform, AKS, CI/CD, IAM/security)
+- Person 3: DevOps/Cloud (Terraform, ACA, CI/CD, IAM/security)
 - Person 4: AI/Fraud model, testing, and documentation support
 
 ## 8-Day Execution Plan
@@ -133,6 +137,6 @@ To avoid sharing passwords, use Azure RBAC:
 
 1. Initialize Expo app code in `mobile-frontend`.
 2. Add Express starter code to each service.
-3. Implement Terraform modules for network, AKS, data services, and API Management.
+3. Implement Terraform modules for network, ACA, data services, and API Management.
 4. Add first GitHub Actions workflow for build and lint.
 5. Add sample dataset files and schema docs under `datasets`.
