@@ -31,7 +31,11 @@ class HomeTab extends BaseScreen {
                 label: 'Send',
                 onTap: () => showSendBottomSheet(context, viewmodel),
               ),
-              const ActionAvatar(iconName: 'money-receive', label: 'Receive'),
+              ActionAvatar(
+                iconName: 'money-receive',
+                label: 'Receive',
+                onTap: () => context.pushNamed(NamedRoutes.receive.name),
+              ),
               ActionAvatar(
                 iconName: 'add-card',
                 label: 'Add Card',
