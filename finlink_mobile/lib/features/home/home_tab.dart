@@ -5,7 +5,9 @@ import 'package:finlink_mobile/features/home/widgets/action_avatar.dart';
 import 'package:finlink_mobile/features/home/widgets/send_bottmsheet.dart';
 import 'package:finlink_mobile/features/home/widgets/transaction_card.dart';
 import 'package:finlink_mobile/features/home/widgets/wallet_card.dart';
+import 'package:finlink_mobile/utils/named_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class HomeTab extends BaseScreen {
@@ -35,16 +37,25 @@ class HomeTab extends BaseScreen {
                 label: 'Add Card',
                 onTap: () => showAddCardBottomSheet(context, viewmodel),
               ),
-              const ActionAvatar(iconName: 'qr-scan', label: 'QR scan'),
+              ActionAvatar(
+                iconName: 'qr-scan',
+                label: 'QR scan',
+                onTap: () => context.pushNamed(NamedRoutes.qrScanner.name),
+              ),
             ],
           ),
           const SizedBox(height: 14),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ActionAvatar(iconName: 'transfer', label: 'Transfer'),
-              ActionAvatar(iconName: 'deposit', label: 'Deposit'),
-              ActionAvatar(iconName: 'more-vertical', label: 'More'),
+              const ActionAvatar(iconName: 'deposit', label: 'Deposit'),
+              ActionAvatar(
+                iconName: 'withdraw',
+                label: 'Withdraw',
+                onTap: () => context.pushNamed(NamedRoutes.withdraw.name),
+              ),
+              const ActionAvatar(iconName: 'loan', label: 'Loan'),
+              const ActionAvatar(iconName: 'more-vertical', label: 'More'),
             ],
           ),
           const SizedBox(height: 24),
