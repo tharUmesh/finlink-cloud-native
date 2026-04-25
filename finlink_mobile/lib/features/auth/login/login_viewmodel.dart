@@ -27,9 +27,10 @@ class LoginViewmodel extends ChangeNotifier {
 		return null;
 	}
 
-	void handleLogin() {
+	void handleLogin(BuildContext context) {
 		if (formKey.currentState?.validate() ?? false) {
 			// Add login logic here.
+      context.pushNamed(NamedRoutes.home.name);
 		}
 	}
 

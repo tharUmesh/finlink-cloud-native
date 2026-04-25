@@ -53,7 +53,7 @@ class LoginScreen extends StatelessWidget {
                               hintText: 'Enter your email',
                               border: OutlineInputBorder(),
                             ),
-                            validator: viewmodel.validateEmail,
+                           // validator: viewmodel.validateEmail,
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -64,13 +64,13 @@ class LoginScreen extends StatelessWidget {
                               hintText: 'Enter your password',
                               border: OutlineInputBorder(),
                             ),
-                            validator: viewmodel.validatePassword,
+                           // validator: viewmodel.validatePassword,
                           ),
                           const SizedBox(height: 24),
                           SizedBox(
                             height: 52,
                             child: ElevatedButton(
-                              onPressed: viewmodel.handleLogin,
+                              onPressed: () => viewmodel.handleLogin(context),
                               child: const Text('Login'),
                             ),
                           ),
