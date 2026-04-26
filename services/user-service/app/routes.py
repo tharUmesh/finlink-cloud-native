@@ -122,3 +122,16 @@ def get_user(user_id: str, db: Session = Depends(get_db), admin: User = Depends(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return UserResponse.model_validate(user)
+
+# ─── GET /users/by-phone/{phone} — internal service-to-service ────────────────
+
+@router.get("/users/by-phone/{phone_number}")
+def get_user_by_phone(phone_number: str, db: Session = Depends(get_db)):
+    """
+    Internal endpoint — called by transaction-service to resolve
+    a phone number to a user_id before looking up their wallet.
+    """
+    user = db.query(User).filter(User.phone_number == phone_number).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return UserResponse.model_validate(user)
