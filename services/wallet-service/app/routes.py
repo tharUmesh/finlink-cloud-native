@@ -59,6 +59,14 @@ def get_wallet_by_user(user_id: uuid.UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Wallet not found")
     return wallet
 
+@router.get("/wallets/{wallet_id}", response_model=WalletResponse)
+def get_wallet_by_id(wallet_id: uuid.UUID, db: Session = Depends(get_db)):
+    """Fetch wallet by wallet_id directly. Internal service-to-service call."""
+    wallet = db.query(Wallet).filter(Wallet.id == wallet_id).first()
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+    return wallet
+
 
 # ─── PUT /wallets/{wallet_id}/balance ──────────────────────────────────────────
 # INTERNAL ONLY — called by transaction-service and seed script.
