@@ -14,6 +14,12 @@ from app.schemas import TransferRequest, DepositRequest, TransactionResponse, Tr
 from app.auth import get_current_user
 from app.config import settings
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from starlette.requests import Request
+
+limiter = Limiter(key_func=get_remote_address)
+
 router = APIRouter()
 
 WALLET_SERVICE_URL = settings.WALLET_SERVICE_URL
@@ -41,7 +47,9 @@ async def get_wallet_by_phone(phone: str) -> dict:
 # ─── POST /transfer ────────────────────────────────────────────────────────────
 
 @router.post("/transfer", response_model=TransactionResponse, status_code=201)
+@limiter.limit("10/minute")
 async def transfer(
+    request: Request,
     payload: TransferRequest,
     db: Session = Depends(get_db),
     token_data: dict = Depends(get_current_user),

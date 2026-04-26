@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 import re
 
 
@@ -12,10 +12,18 @@ class RegisterRequest(BaseModel):
     full_name: str
     password: str
 
+    @model_validator(mode="before")
+    @classmethod
+    def strip_strings(cls, values):
+        """Strip leading/trailing whitespace from all string fields."""
+        return {
+            k: v.strip() if isinstance(v, str) else v
+            for k, v in values.items()
+        }
+
     @field_validator("phone_number")
     @classmethod
     def validate_phone(cls, v):
-        # Accept formats like +94771234567 or 0771234567
         if not re.match(r"^\+?[0-9]{9,15}$", v):
             raise ValueError("Invalid phone number format")
         return v
@@ -30,9 +38,17 @@ class RegisterRequest(BaseModel):
     @field_validator("national_id")
     @classmethod
     def validate_national_id(cls, v):
-        # Sri Lankan NIC: 9 digits + V/X, or 12 digits
         if not re.match(r"^([0-9]{9}[VvXx]|[0-9]{12})$", v):
             raise ValueError("Invalid Sri Lankan National ID format")
+        return v
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name(cls, v):
+        if len(v) < 2:
+            raise ValueError("Full name too short")
+        if len(v) > 100:
+            raise ValueError("Full name too long")
         return v
 
 

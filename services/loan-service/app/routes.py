@@ -16,13 +16,21 @@ from app.auth import get_current_user
 from app.scoring import calculate_credit_score, calculate_interest_rate
 from app.config import settings
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from starlette.requests import Request
+
+limiter = Limiter(key_func=get_remote_address)
+
 router = APIRouter()
 
 
 # ─── POST /loans/apply ────────────────────────────────────────────────────────
 
 @router.post("/loans/apply", response_model=LoanApplicationResponse, status_code=201)
+@limiter.limit("5/minute")
 async def apply_for_loan(
+    request: Request,
     payload: LoanApplicationRequest,
     db: Session = Depends(get_db),
     token_data: dict = Depends(get_current_user)
