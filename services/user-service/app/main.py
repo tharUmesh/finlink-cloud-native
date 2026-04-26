@@ -1,16 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.database import engine, Base
-from app import models  # noqa: F401 — import triggers model registration
+from app import models  # noqa: F401
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Runs once when the service starts — creates all tables if they don't exist
     Base.metadata.create_all(bind=engine)
     print("✅ user-service: database tables ready")
     yield
-    # Runs on shutdown — nothing to clean up yet
 
 
 app = FastAPI(
@@ -18,6 +16,10 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Wire in routes
+from app.routes import router
+app.include_router(router, tags=["Users"])
 
 
 @app.get("/health")

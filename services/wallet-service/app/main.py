@@ -17,6 +17,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+from app.routes import router
+app.include_router(router, tags=["Wallets"])
+
 
 @app.get("/health")
 def health():
