@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:finlink_mobile/features/base_screen.dart';
 import 'package:finlink_mobile/features/home/home_tab.dart';
 import 'package:finlink_mobile/features/home/home_viewmodel.dart';
+import 'package:finlink_mobile/features/profile/profile_screen.dart';
 
 
 class HomeScreen extends BaseScreen {
@@ -22,7 +23,7 @@ class HomeScreen extends BaseScreen {
                 HomeTab(),
                 _CommunityTab(),
                 _NotificationsTab(),
-                _ProfileTab(),
+                ProfileScreen(),
               ],
             ),
             bottomNavigationBar: BottomNavigationBar(
@@ -109,11 +110,3 @@ class _NotificationsTab extends StatelessWidget {
   }
 }
 
-class _ProfileTab extends StatelessWidget {
-  const _ProfileTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Profile'));
-  }
-}

@@ -3,6 +3,7 @@ import 'package:finlink_mobile/features/home/home_screen.dart';
 import 'package:finlink_mobile/features/home/receive/receive_screen.dart';
 import 'package:finlink_mobile/features/home/qr_scanner/qr_scanner.dart';
 import 'package:finlink_mobile/features/home/withdraw/withdraw_screen.dart';
+import 'package:finlink_mobile/features/profile/profile_screen.dart';
 import 'package:finlink_mobile/main.dart';
 import 'package:finlink_mobile/features/auth/login/login_screen.dart';
 import 'package:finlink_mobile/utils/named_routes.dart';
@@ -25,6 +26,11 @@ final router = GoRouter(
       path: NamedRoutes.home.path,
       name: NamedRoutes.home.name,
       builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: NamedRoutes.profile.path,
+      name: NamedRoutes.profile.name,
+      builder: (context, state) => const ProfileScreen(),
     ),
     GoRoute(
       path: NamedRoutes.receive.path,
