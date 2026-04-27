@@ -2,9 +2,11 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app import models  # noqa: F401
-from app.processor import process_notifications
+from app.processor import process_notifications, set_cosmos_container
+from app.cosmos_client import get_cosmos_container
 
 logging.basicConfig(level=logging.INFO)
 
@@ -13,6 +15,11 @@ logging.basicConfig(level=logging.INFO)
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     print("✅ notification-service: database tables ready")
+
+    # Connect to Cosmos DB (returns None if not configured — local dev is fine)
+    container = get_cosmos_container()
+    set_cosmos_container(container)
+
     task = asyncio.create_task(process_notifications())
     print("✅ notification-service: notification processor started")
     yield
@@ -28,8 +35,6 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
-
-from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
