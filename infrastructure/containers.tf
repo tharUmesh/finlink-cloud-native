@@ -43,7 +43,7 @@ resource "azurerm_container_app" "user_service" {
   }
 
   template {
-    min_replicas = 0
+    min_replicas = 1
     max_replicas = 5
 
     container {
@@ -207,7 +207,7 @@ resource "azurerm_container_app" "transaction_service" {
   }
 
   template {
-    min_replicas = 0
+    min_replicas = 1
     max_replicas = 10  # highest traffic service
 
     container {
