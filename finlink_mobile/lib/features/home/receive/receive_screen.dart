@@ -1,7 +1,7 @@
 import 'package:finlink_mobile/features/home/receive/receive_viewmodel.dart';
 import 'package:finlink_mobile/service_locator.dart';
 import 'package:finlink_mobile/services/auth/auth_session.dart';
-import 'package:finlink_mobile/services/wallet/wallet_service.dart';
+import 'package:finlink_mobile/services/user/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -14,7 +14,7 @@ class ReceiveScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => ReceiveViewmodel(
         servicelocator<AuthSession>(),
-        servicelocator<WalletService>(),
+        servicelocator<UserService>(),
       ),
       child: Consumer<ReceiveViewmodel>(
         builder: (context, viewmodel, child) {
@@ -30,7 +30,7 @@ class ReceiveScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Your Wallet ID',
+                      'Your Phone Number',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -48,7 +48,7 @@ class ReceiveScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              viewmodel.walletIdLabel,
+                              viewmodel.phoneNumberLabel,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -59,11 +59,11 @@ class ReceiveScreen extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            onPressed: viewmodel.hasWalletId
-                                ? () => viewmodel.copyWalletId(context)
+                            onPressed: viewmodel.hasPhoneNumber
+                                ? () => viewmodel.copyPhoneNumber(context)
                                 : null,
                             icon: const Icon(Icons.copy_rounded),
-                            tooltip: 'Copy wallet ID',
+                            tooltip: 'Copy phone number',
                           ),
                         ],
                       ),
@@ -92,9 +92,9 @@ class ReceiveScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: viewmodel.hasWalletId
+                          child: viewmodel.hasPhoneNumber
                               ? QrImageView(
-                                  data: viewmodel.walletId ?? '',
+                                  data: viewmodel.phoneNumber ?? '',
                                   size: 220,
                                 )
                               : const SizedBox(
@@ -109,7 +109,7 @@ class ReceiveScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Let others scan this QR to send funds to your wallet.',
+                      'Let others scan this QR to send funds to your phone.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,

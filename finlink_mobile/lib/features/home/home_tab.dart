@@ -79,7 +79,11 @@ class HomeTab extends BaseScreen {
                 label: 'Withdraw',
                 onTap: () => context.pushNamed(NamedRoutes.withdraw.name),
               ),
-              const ActionAvatar(iconName: 'loan', label: 'Loan'),
+              ActionAvatar(
+                iconName: 'loan',
+                label: 'Loan',
+                onTap: () => context.pushNamed(NamedRoutes.loan.name),
+              ),
               const ActionAvatar(iconName: 'more-vertical', label: 'More'),
             ],
           ),

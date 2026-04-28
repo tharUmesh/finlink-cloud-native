@@ -4,6 +4,7 @@ import 'package:finlink_mobile/features/profile/profile_viewmodel.dart';
 import 'package:finlink_mobile/services/auth/auth_service.dart';
 import 'package:finlink_mobile/services/auth/auth_session.dart';
 import 'package:finlink_mobile/services/cards/linked_cards_store.dart';
+import 'package:finlink_mobile/services/loan/loan_service.dart';
 import 'package:finlink_mobile/services/notification/notification_service.dart';
 import 'package:finlink_mobile/services/transaction/transaction_service.dart';
 import 'package:finlink_mobile/services/transaction/transaction_refresh_notifier.dart';
@@ -26,6 +27,9 @@ void setupServiceLocator() {
   );
   servicelocator.registerLazySingleton<TransactionService>(
     () => TransactionService(servicelocator<AuthSession>()),
+  );
+  servicelocator.registerLazySingleton<LoanService>(
+    () => LoanService(servicelocator<AuthSession>()),
   );
   servicelocator.registerLazySingleton<TransactionRefreshNotifier>(
     () => TransactionRefreshNotifier(),

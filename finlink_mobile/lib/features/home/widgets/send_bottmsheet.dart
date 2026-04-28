@@ -1,14 +1,42 @@
 import 'package:finlink_mobile/features/home/home_viewmodel.dart';
 import 'package:finlink_mobile/features/home/qr_scanner/qr_scanner.dart';
+import 'package:finlink_mobile/features/home/widgets/success_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class SendBottomsheet extends StatelessWidget {
   const SendBottomsheet({super.key});
 
+  Future<void> _handleSend(
+    BuildContext context,
+    HomeViewmodel viewmodel,
+  ) async {
+    final didSubmit = await viewmodel.submitSendForm(context);
+    if (!didSubmit || !context.mounted) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return SuccessDialog(
+          title: 'Transfer Submitted',
+          message: 'Your transfer is being processed.',
+          buttonText: 'Done',
+          onPressed: () {
+            Navigator.of(dialogContext).pop();
+            viewmodel.closeSendBottomSheet(context);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final viewmodel = context.read<HomeViewmodel>();
+    final viewmodel = context.watch<HomeViewmodel>();
 
     return SafeArea(
       top: false,
@@ -86,6 +114,11 @@ class SendBottomsheet extends StatelessWidget {
               TextFormField(
                 controller: viewmodel.amountController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'^\d*\.?\d{0,2}'),
+                  ),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Amount',
                   hintText: 'Enter amount',
@@ -104,12 +137,36 @@ class SendBottomsheet extends StatelessWidget {
                   counterText: '',
                 ),
               ),
+              if (viewmodel.sendErrorMessage != null &&
+                  viewmodel.sendErrorMessage!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  viewmodel.sendErrorMessage!,
+                  style: const TextStyle(
+                    color: Color(0xFFB91C1C),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
               const SizedBox(height: 8),
               SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () => viewmodel.submitSendForm(context),
-                  child: const Text('Send'),
+                  onPressed: viewmodel.isSending
+                      ? null
+                      : () => _handleSend(context, viewmodel),
+                  child: viewmodel.isSending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : const Text('Send'),
                 ),
               ),
             ],

@@ -4,9 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:finlink_mobile/features/base_screen.dart';
 import 'package:finlink_mobile/features/home/home_tab.dart';
 import 'package:finlink_mobile/features/home/home_viewmodel.dart';
+import 'package:finlink_mobile/features/community/community_screen.dart';
+import 'package:finlink_mobile/features/notifications/notification_screen.dart';
 import 'package:finlink_mobile/features/profile/profile_screen.dart';
 import 'package:finlink_mobile/service_locator.dart';
 import 'package:finlink_mobile/services/cards/linked_cards_store.dart';
+import 'package:finlink_mobile/services/notification/notification_service.dart';
 import 'package:finlink_mobile/services/transaction/transaction_service.dart';
 import 'package:finlink_mobile/services/transaction/transaction_refresh_notifier.dart';
 import 'package:finlink_mobile/services/wallet/wallet_service.dart';
@@ -22,11 +25,13 @@ class HomeScreen extends BaseScreen {
         final viewmodel = HomeViewmodel(
           servicelocator<WalletService>(),
           servicelocator<TransactionService>(),
+          servicelocator<NotificationService>(),
           servicelocator<TransactionRefreshNotifier>(),
           servicelocator<LinkedCardsStore>(),
         );
         viewmodel.startWalletStream();
         viewmodel.startTransactionPolling();
+        viewmodel.startNotificationStream();
         return viewmodel;
       },
       child: Consumer<HomeViewmodel>(
@@ -36,8 +41,8 @@ class HomeScreen extends BaseScreen {
               index: viewmodel.selectedIndex,
               children: const [
                 HomeTab(),
-                _CommunityTab(),
-                _NotificationsTab(),
+                CommunityScreen(),
+                NotificationScreen(),
                 ProfileScreen(),
               ],
             ),
@@ -45,8 +50,8 @@ class HomeScreen extends BaseScreen {
               currentIndex: viewmodel.selectedIndex,
               onTap: viewmodel.onTabChanged,
               type: BottomNavigationBarType.fixed,
-              items: const [
-                BottomNavigationBarItem(
+              items: [
+                const BottomNavigationBarItem(
                   icon: _NavIcon(assetName: 'images/svg_icons/home.svg'),
                   activeIcon: _NavIcon(
                     assetName: 'images/svg_icons/home.svg',
@@ -54,7 +59,7 @@ class HomeScreen extends BaseScreen {
                   ),
                   label: 'Home',
                 ),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                   icon: _NavIcon(assetName: 'images/svg_icons/community.svg'),
                   activeIcon: _NavIcon(
                     assetName: 'images/svg_icons/community.svg',
@@ -63,14 +68,18 @@ class HomeScreen extends BaseScreen {
                   label: 'Community',
                 ),
                 BottomNavigationBarItem(
-                  icon: _NavIcon(assetName: 'images/svg_icons/notifications.svg'),
+                  icon: _NavIcon(
+                    assetName: 'images/svg_icons/notifications.svg',
+                    badgeCount: viewmodel.unreadNotificationsCount,
+                  ),
                   activeIcon: _NavIcon(
                     assetName: 'images/svg_icons/notifications.svg',
                     isActive: true,
+                    badgeCount: viewmodel.unreadNotificationsCount,
                   ),
                   label: 'Notifications',
                 ),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                   icon: _NavIcon(assetName: 'images/svg_icons/profile.svg'),
                   activeIcon: _NavIcon(
                     assetName: 'images/svg_icons/profile.svg',
@@ -90,12 +99,17 @@ class HomeScreen extends BaseScreen {
 class _NavIcon extends StatelessWidget {
   final String assetName;
   final bool isActive;
+  final int badgeCount;
 
-  const _NavIcon({required this.assetName, this.isActive = false});
+  const _NavIcon({
+    required this.assetName,
+    this.isActive = false,
+    this.badgeCount = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
+    final icon = SvgPicture.asset(
       assetName,
       width: 22,
       height: 22,
@@ -104,24 +118,37 @@ class _NavIcon extends StatelessWidget {
         BlendMode.srcIn,
       ),
     );
-  }
-}
 
-class _CommunityTab extends StatelessWidget {
-  const _CommunityTab();
+    if (badgeCount <= 0) {
+      return icon;
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Community'));
-  }
-}
-
-class _NotificationsTab extends StatelessWidget {
-  const _NotificationsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Notifications'));
+    final label = badgeCount > 99 ? '99+' : badgeCount.toString();
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        icon,
+        Positioned(
+          right: -8,
+          top: -6,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE11D48),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

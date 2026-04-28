@@ -6,7 +6,8 @@ enum NamedRoutes {
   receive('/receive'),
   qrScanner('/qr-scanner'),
   withdraw('/withdraw'),
-  deposit('/deposit');
+  deposit('/deposit'),
+  loan('/loan');
 
   final String path;
   const NamedRoutes(this.path);

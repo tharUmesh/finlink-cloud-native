@@ -59,11 +59,22 @@ class LoginScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: viewmodel.passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
+                            obscureText: !viewmodel.isPasswordVisible,
+                            decoration: InputDecoration(
                               labelText: 'Password',
                               hintText: 'Enter your password',
                               border: OutlineInputBorder(),
+                              suffixIcon: IconButton(
+                                onPressed: viewmodel.togglePasswordVisibility,
+                                icon: Icon(
+                                  viewmodel.isPasswordVisible
+                                      ? Icons.visibility_off_rounded
+                                      : Icons.visibility_rounded,
+                                ),
+                                tooltip: viewmodel.isPasswordVisible
+                                    ? 'Hide password'
+                                    : 'Show password',
+                              ),
                             ),
                             validator: viewmodel.validatePassword,
                           ),

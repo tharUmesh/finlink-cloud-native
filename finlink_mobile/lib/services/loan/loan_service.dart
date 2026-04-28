@@ -1,95 +1,59 @@
-import 'dart:async';
 import 'dart:convert';
 
-import 'package:finlink_mobile/models/notification/notification_models.dart';
+import 'package:finlink_mobile/models/loan/loan_models.dart';
 import 'package:finlink_mobile/services/auth/auth_session.dart';
 import 'package:http/http.dart' as http;
 
-class NotificationService {
-  NotificationService(
+class LoanService {
+  LoanService(
     this._session, {
     http.Client? client,
-    this.baseUrl = 'http://192.168.1.233:8006',
-    this.notificationsPath = '/notifications',
+    this.baseUrl = 'http://192.168.1.233:8004',
+    this.applyPath = '/loans/apply',
+    this.openLoansPath = '/loans/open',
+    this.loansPath = '/loans',
   }) : _client = client ?? http.Client();
 
   final AuthSession _session;
   final http.Client _client;
   final String baseUrl;
-  final String notificationsPath;
+  final String applyPath;
+  final String openLoansPath;
+  final String loansPath;
 
-  Future<List<NotificationEvent>> listMyNotifications({
-    int skip = 0,
-    int limit = 20,
-  }) {
-    final userId = _session.user?.id;
-    if (!_session.isAuthenticated || userId == null || userId.isEmpty) {
-      throw const NotificationServiceException('No active session. Please login again.');
+  Future<LoanApplicationResponse> applyForLoan(
+    LoanApplicationRequest request,
+  ) async {
+    final uri = _buildUri(applyPath);
+    final response = await _client.post(
+      uri,
+      headers: _buildHeaders(requireAuth: true),
+      body: jsonEncode(request.toJson()),
+    );
+
+    final Map<String, dynamic> decodedBody = _decodeResponse(response.body);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw LoanServiceException(
+        _extractMessage(decodedBody) ?? 'Unable to submit loan request.',
+        statusCode: response.statusCode,
+      );
     }
 
-    return listNotificationsForUser(
-      userId,
-      skip: skip,
-      limit: limit,
-      requireAuth: true,
-    );
+    return LoanApplicationResponse.fromJson(decodedBody);
   }
 
-  Stream<List<NotificationEvent>> watchMyNotifications({
-    Duration interval = const Duration(seconds: 15),
-    int limit = 20,
-  }) {
-    final controller = StreamController<List<NotificationEvent>>();
-    Timer? timer;
-
-    Future<void> fetchNotifications() async {
-      try {
-        final notifications = await listMyNotifications(limit: limit, skip: 0);
-        if (!controller.isClosed) {
-          controller.add(notifications);
-        }
-      } catch (error, stackTrace) {
-        if (!controller.isClosed) {
-          controller.addError(error, stackTrace);
-        }
-      }
-    }
-
-    controller.onListen = () {
-      fetchNotifications();
-      timer = Timer.periodic(interval, (_) => fetchNotifications());
-    };
-
-    controller.onCancel = () {
-      timer?.cancel();
-    };
-
-    return controller.stream;
-  }
-
-  Future<List<NotificationEvent>> listNotificationsForUser(
-    String userId, {
-    int skip = 0,
-    int limit = 20,
-    bool requireAuth = false,
-  }) async {
-    final uri = _buildUri(
-      '$notificationsPath/$userId',
-      queryParameters: {
-        'skip': skip.toString(),
-        'limit': limit.toString(),
-      },
-    );
+  Future<List<LoanRecord>> listOpenLoans() async {
+    final uri = _buildUri(openLoansPath);
     final response = await _client.get(
       uri,
-      headers: _buildHeaders(requireAuth: requireAuth),
+      headers: _buildHeaders(requireAuth: true),
     );
 
     final dynamic decoded = _decodeDynamic(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final Map<String, dynamic> decodedBody = _coerceMap(decoded);
-      throw NotificationServiceException(
-        _extractMessage(decodedBody) ?? 'Unable to load notifications.',
+      throw LoanServiceException(
+        _extractMessage(decodedBody) ?? 'Unable to load loan requests.',
         statusCode: response.statusCode,
       );
     }
@@ -97,43 +61,62 @@ class NotificationService {
     if (decoded is List) {
       return decoded
           .whereType<Map<String, dynamic>>()
-          .map(NotificationEvent.fromJson)
+          .map(LoanRecord.fromJson)
           .toList();
     }
-
-    if (decoded is Map) {
-      final map = Map<String, dynamic>.from(decoded);
-      return [NotificationEvent.fromJson(map)];
-    }
-
     return [];
   }
 
-  Future<NotificationEvent> markRead(
-    String notificationId, {
-    bool requireAuth = true,
-  }) async {
-    final uri = _buildUri('$notificationsPath/$notificationId/read');
-    final response = await _client.post(
+  Future<List<LoanRecord>> listMyLoans() async {
+    final uri = _buildUri(loansPath);
+    final response = await _client.get(
       uri,
-      headers: _buildHeaders(requireAuth: requireAuth),
-      body: jsonEncode(<String, dynamic>{}),
+      headers: _buildHeaders(requireAuth: true),
     );
 
-    final Map<String, dynamic> decodedBody = _decodeResponse(response.body);
+    final dynamic decoded = _decodeDynamic(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw NotificationServiceException(
-        _extractMessage(decodedBody) ?? 'Unable to mark notification as read.',
+      final Map<String, dynamic> decodedBody = _coerceMap(decoded);
+      throw LoanServiceException(
+        _extractMessage(decodedBody) ?? 'Unable to load your loans.',
         statusCode: response.statusCode,
       );
     }
 
-    return NotificationEvent.fromJson(decodedBody);
+    if (decoded is List) {
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map(LoanRecord.fromJson)
+          .toList();
+    }
+    return [];
+  }
+
+  Future<LoanRecord> fundLoan(
+    String loanId,
+    FundLoanRequest request,
+  ) async {
+    final uri = _buildUri('$loansPath/$loanId/fund');
+    final response = await _client.post(
+      uri,
+      headers: _buildHeaders(requireAuth: true),
+      body: jsonEncode(request.toJson()),
+    );
+
+    final Map<String, dynamic> decodedBody = _decodeResponse(response.body);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw LoanServiceException(
+        _extractMessage(decodedBody) ?? 'Unable to fund loan.',
+        statusCode: response.statusCode,
+      );
+    }
+
+    return LoanRecord.fromJson(decodedBody);
   }
 
   Map<String, String> _buildHeaders({required bool requireAuth}) {
     if (requireAuth && !_session.isAuthenticated) {
-      throw const NotificationServiceException('No active session. Please login again.');
+      throw const LoanServiceException('No active session. Please login again.');
     }
 
     final headers = <String, String>{
@@ -188,10 +171,10 @@ class NotificationService {
     return null;
   }
 
-  Uri _buildUri(String path, {Map<String, String>? queryParameters}) {
+  Uri _buildUri(String path) {
     final base = Uri.parse(baseUrl);
     final joinedPath = _joinPaths(base.path, path);
-    return base.replace(path: joinedPath, queryParameters: queryParameters);
+    return base.replace(path: joinedPath);
   }
 
   String _joinPaths(String basePath, String path) {
@@ -210,8 +193,8 @@ class NotificationService {
   }
 }
 
-class NotificationServiceException implements Exception {
-  const NotificationServiceException(this.message, {this.statusCode});
+class LoanServiceException implements Exception {
+  const LoanServiceException(this.message, {this.statusCode});
 
   final String message;
   final int? statusCode;
@@ -221,6 +204,6 @@ class NotificationServiceException implements Exception {
     if (statusCode == null) {
       return message;
     }
-    return 'NotificationServiceException($statusCode): $message';
+    return 'LoanServiceException($statusCode): $message';
   }
 }

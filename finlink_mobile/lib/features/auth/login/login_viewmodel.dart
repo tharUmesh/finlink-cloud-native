@@ -9,7 +9,9 @@ import 'package:go_router/go_router.dart';
 
 
 class LoginViewmodel extends BaseViewmodel {
-	LoginViewmodel(this._authService, this._authSession, this._walletService);
+	LoginViewmodel(this._authService, this._authSession, this._walletService) {
+		clearFields();
+	}
 
 	final AuthService _authService;
 	final AuthSession _authSession;
@@ -20,9 +22,16 @@ class LoginViewmodel extends BaseViewmodel {
 
 	bool _isLoading = false;
 	String? _errorMessage;
+	bool _isPasswordVisible = false;
 
 	bool get isLoading => _isLoading;
 	String? get errorMessage => _errorMessage;
+	bool get isPasswordVisible => _isPasswordVisible;
+
+	void togglePasswordVisibility() {
+		_isPasswordVisible = !_isPasswordVisible;
+		notifyListeners();
+	}
 
 	String? validatePhoneNumber(String? value) {
 		if (value == null || value.trim().isEmpty) {
@@ -93,6 +102,14 @@ class LoginViewmodel extends BaseViewmodel {
 
 	void navigateToRegister(BuildContext context) {
 		context.go(NamedRoutes.register.path);
+	}
+
+	void clearFields() {
+		phoneController.clear();
+		passwordController.clear();
+		_errorMessage = null;
+		_isPasswordVisible = false;
+		notifyListeners();
 	}
 
 	@override

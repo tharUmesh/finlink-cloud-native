@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:finlink_mobile/features/base_viewmodel.dart';
 import 'package:finlink_mobile/models/transaction/transaction_models.dart';
+import 'package:finlink_mobile/models/notification/notification_models.dart';
 import 'package:finlink_mobile/models/wallet/wallet_models.dart';
 import 'package:finlink_mobile/services/cards/linked_cards_store.dart';
+import 'package:finlink_mobile/services/notification/notification_service.dart';
 import 'package:finlink_mobile/services/transaction/transaction_service.dart';
 import 'package:finlink_mobile/services/transaction/transaction_refresh_notifier.dart';
 import 'package:finlink_mobile/services/wallet/wallet_service.dart';
@@ -15,6 +17,7 @@ class HomeViewmodel extends BaseViewmodel {
 	HomeViewmodel(
 		this._walletService,
 		this._transactionService,
+		this._notificationService,
 		this._transactionRefresh,
 		this._linkedCardsStore,
 	) {
@@ -24,6 +27,7 @@ class HomeViewmodel extends BaseViewmodel {
 
 	final WalletService _walletService;
 	final TransactionService _transactionService;
+	final NotificationService _notificationService;
 	final TransactionRefreshNotifier _transactionRefresh;
 	final LinkedCardsStore _linkedCardsStore;
 	final NumberFormat _currencyFormat = NumberFormat.currency(
@@ -41,6 +45,13 @@ class HomeViewmodel extends BaseViewmodel {
 	bool _isTransactionsLoading = false;
 	String? _transactionsError;
 	List<TransactionRecord> _recentTransactions = [];
+	StreamSubscription<List<NotificationEvent>>? _notificationSubscription;
+	bool _isNotificationsLoading = false;
+	String? _notificationsError;
+	List<NotificationEvent> _notifications = [];
+	final Set<String> _locallyReadNotificationIds = <String>{};
+	bool _isSending = false;
+	String? _sendErrorMessage;
 
 	final sendFormKey = GlobalKey<FormState>();
 	final receiverAddressController = TextEditingController();
@@ -60,6 +71,13 @@ class HomeViewmodel extends BaseViewmodel {
 	bool get isTransactionsLoading => _isTransactionsLoading;
 	String? get transactionsError => _transactionsError;
 	List<TransactionRecord> get recentTransactions => _recentTransactions;
+	bool get isNotificationsLoading => _isNotificationsLoading;
+	String? get notificationsError => _notificationsError;
+	List<NotificationEvent> get notifications => _notifications;
+	int get unreadNotificationsCount =>
+			_notifications.where((item) => item.isUnread).length;
+	bool get isSending => _isSending;
+	String? get sendErrorMessage => _sendErrorMessage;
 	BankName? get linkedBank => _linkedCardsStore.primaryBank;
 	bool get hasLinkedCard => _linkedCardsStore.hasCards;
 	String get walletBalanceText {
@@ -127,6 +145,53 @@ class HomeViewmodel extends BaseViewmodel {
 			_transactionTimer = Timer.periodic(interval, (_) => loadRecentTransactions());
 		}
 
+		void startNotificationStream({Duration interval = const Duration(seconds: 20)}) {
+			_notificationSubscription?.cancel();
+			_isNotificationsLoading = true;
+			_notificationsError = null;
+			notifyListeners();
+
+			_notificationSubscription = _notificationService
+					.watchMyNotifications(interval: interval)
+					.listen(
+						(values) {
+							_notifications = _applyLocalReadOverrides(values);
+							_isNotificationsLoading = false;
+							_notificationsError = null;
+							notifyListeners();
+						},
+						onError: (error) {
+							_isNotificationsLoading = false;
+							_notificationsError = error is NotificationServiceException
+									? error.message
+									: 'Unable to load notifications right now.';
+							notifyListeners();
+						},
+					);
+		}
+
+		Future<void> loadNotifications({bool force = false}) async {
+			if (_isNotificationsLoading && !force) {
+				return;
+			}
+
+			_isNotificationsLoading = true;
+			_notificationsError = null;
+			notifyListeners();
+
+			try {
+				final values = await _notificationService.listMyNotifications();
+				_notifications = _applyLocalReadOverrides(values);
+			} on NotificationServiceException catch (error) {
+				_notificationsError = error.message;
+			} catch (_) {
+				_notificationsError = 'Unable to load notifications right now.';
+			} finally {
+				_isNotificationsLoading = false;
+				notifyListeners();
+			}
+		}
+
 		void _handleTransactionRefresh() {
 			loadRecentTransactions();
 		}
@@ -158,6 +223,62 @@ class HomeViewmodel extends BaseViewmodel {
 				_isTransactionsLoading = false;
 				notifyListeners();
 			}
+		}
+
+		Future<void> markNotificationRead(NotificationEvent notification) async {
+			if (notification.isRead) {
+				return;
+			}
+
+			final optimistic = _notifications.map((item) {
+				if (item.id == notification.id) {
+					_locallyReadNotificationIds.add(item.id);
+					return NotificationEvent(
+						id: item.id,
+						userId: item.userId,
+						eventType: item.eventType,
+						title: item.title,
+						message: item.message,
+						isRead: true,
+						createdAt: item.createdAt,
+						payload: item.payload,
+						raw: item.raw,
+					);
+				}
+				return item;
+			}).toList();
+			_notifications = optimistic;
+			notifyListeners();
+
+			try {
+				await _notificationService.markRead(notification.id);
+			} catch (_) {
+				// no-op: UI stays optimistic
+			}
+		}
+
+		List<NotificationEvent> _applyLocalReadOverrides(
+			List<NotificationEvent> values,
+		) {
+			if (_locallyReadNotificationIds.isEmpty) {
+				return values;
+			}
+			return values.map((item) {
+				if (_locallyReadNotificationIds.contains(item.id)) {
+					return NotificationEvent(
+						id: item.id,
+						userId: item.userId,
+						eventType: item.eventType,
+						title: item.title,
+						message: item.message,
+						isRead: true,
+						createdAt: item.createdAt,
+						payload: item.payload,
+						raw: item.raw,
+					);
+				}
+				return item;
+			}).toList();
 		}
 
 		bool isTransactionIncoming(TransactionRecord record) {
@@ -196,6 +317,7 @@ class HomeViewmodel extends BaseViewmodel {
 	void dispose() {
 		_walletSubscription?.cancel();
 		_transactionTimer?.cancel();
+		_notificationSubscription?.cancel();
 		_transactionRefresh.removeListener(_handleTransactionRefresh);
 		_linkedCardsStore.removeListener(_handleLinkedCardsChanged);
 		receiverAddressController.dispose();
@@ -264,12 +386,54 @@ class HomeViewmodel extends BaseViewmodel {
 		return null;
 	}
 
-	void submitSendForm(BuildContext context) {
-		if (!(sendFormKey.currentState?.validate() ?? false)) {
-			return;
+	Future<bool> submitSendForm(BuildContext context) async {
+		if (_isSending) {
+			return false;
 		}
-		clearSendForm();
-		Navigator.pop(context);
+
+		if (!(sendFormKey.currentState?.validate() ?? false)) {
+			return false;
+		}
+
+		final receiverPhone = receiverAddressController.text.trim();
+		final amount = double.tryParse(amountController.text.trim());
+		final note = remarksController.text.trim();
+		if (receiverPhone.isEmpty) {
+			_showSnack(context, "Receiver's address is required.");
+			return false;
+		}
+		if (amount == null || amount <= 0) {
+			_showSnack(context, 'Enter a valid amount.');
+			return false;
+		}
+
+		_isSending = true;
+		_sendErrorMessage = null;
+		notifyListeners();
+
+		try {
+			await _transactionService.transfer(
+				TransferRequest(
+					receiverPhone: receiverPhone,
+					amount: amount,
+					note: note.isEmpty ? null : note,
+				),
+			);
+			_transactionRefresh.notifyRefresh();
+			return true;
+		} on TransactionServiceException catch (error) {
+			_sendErrorMessage = error.message;
+			_showSnack(context, error.message);
+			return false;
+		} catch (_) {
+			const message = 'Unable to send funds right now.';
+			_sendErrorMessage = message;
+			_showSnack(context, message);
+			return false;
+		} finally {
+			_isSending = false;
+			notifyListeners();
+		}
 	}
 
 	void closeSendBottomSheet(BuildContext context) {
@@ -281,6 +445,8 @@ class HomeViewmodel extends BaseViewmodel {
 		receiverAddressController.clear();
 		amountController.clear();
 		remarksController.clear();
+		_sendErrorMessage = null;
+		notifyListeners();
 	}
 
 	void setReceiverAddress(String value) {
@@ -377,6 +543,15 @@ class HomeViewmodel extends BaseViewmodel {
 		cardNumberController.clear();
 		cvcController.clear();
 		notifyListeners();
+	}
+
+	void _showSnack(BuildContext context, String message) {
+		if (!context.mounted) {
+			return;
+		}
+		ScaffoldMessenger.of(context).showSnackBar(
+			SnackBar(content: Text(message)),
+		);
 	}
 
 
