@@ -1,0 +1,99 @@
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: finlink-postgres
+    environment:
+      POSTGRES_USER: finlink
+      POSTGRES_PASSWORD: finlink_local
+      POSTGRES_DB: finlink_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finlink -d finlink_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./services/user-service
+    container_name: finlink-user
+    ports:
+      - "8001:8000"
+    env_file:
+      - ./services/user-service/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  wallet-service:
+    build:
+      context: ./services/wallet-service
+    container_name: finlink-wallet
+    ports:
+      - "8002:8000"
+    env_file:
+      - ./services/wallet-service/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  transaction-service:
+    build:
+      context: ./services/transaction-service
+    container_name: finlink-transaction
+    ports:
+      - "8003:8000"
+    env_file:
+      - ./services/transaction-service/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  loan-service:
+    build:
+      context: ./services/loan-service
+    container_name: finlink-loan
+    ports:
+      - "8004:8000"
+    env_file:
+      - ./services/loan-service/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  fraud-service:
+    build:
+      context: ./services/fraud-service
+    container_name: finlink-fraud
+    ports:
+      - "8005:8000"
+    env_file:
+      - ./services/fraud-service/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+    container_name: finlink-notification
+    ports:
+      - "8006:8000"
+    env_file:
+      - ./services/notification-service/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
