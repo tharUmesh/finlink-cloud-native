@@ -6,6 +6,12 @@ class Settings(BaseSettings):
     SERVICE_BUS_CONNECTION_STRING: str = ""
     SERVICE_NAME: str = "notification-service"
 
+    # Cosmos DB — optional locally, required on Azure
+    COSMOS_ENDPOINT: str = ""
+    COSMOS_KEY: str = ""
+    COSMOS_DATABASE: str = "finlink"
+    COSMOS_CONTAINER: str = "notifications"
+
     model_config = {"env_file": ".env"}
 
 settings = Settings()
