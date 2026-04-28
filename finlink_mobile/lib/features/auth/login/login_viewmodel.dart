@@ -1,15 +1,17 @@
 import 'package:finlink_mobile/features/base_viewmodel.dart';
-import 'package:finlink_mobile/models/auth_models.dart';
-import 'package:finlink_mobile/services/auth_service.dart';
+import 'package:finlink_mobile/models/auth/auth_models.dart';
+import 'package:finlink_mobile/services/auth/auth_service.dart';
+import 'package:finlink_mobile/services/auth/auth_session.dart';
 import 'package:finlink_mobile/utils/named_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 
 class LoginViewmodel extends BaseViewmodel {
-	LoginViewmodel(this._authService);
+	LoginViewmodel(this._authService, this._authSession);
 
 	final AuthService _authService;
+	final AuthSession _authSession;
 	final formKey = GlobalKey<FormState>();
 	final phoneController = TextEditingController();
 	final passwordController = TextEditingController();
@@ -50,12 +52,13 @@ class LoginViewmodel extends BaseViewmodel {
 		notifyListeners();
 
 		try {
-			await _authService.login(
+			final response = await _authService.login(
 				LoginRequest(
 					phoneNumber: phoneController.text.trim(),
 					password: passwordController.text,
 				),
 			);
+			_authSession.applyAuthResponse(response);
 			if (!context.mounted) {
 				return;
 			}

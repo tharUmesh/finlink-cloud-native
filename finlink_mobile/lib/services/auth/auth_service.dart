@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:finlink_mobile/models/auth_models.dart';
+import 'package:finlink_mobile/models/auth/auth_models.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {

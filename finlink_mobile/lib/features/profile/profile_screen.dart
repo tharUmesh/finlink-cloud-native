@@ -1,5 +1,6 @@
 import 'package:finlink_mobile/features/base_screen.dart';
 import 'package:finlink_mobile/features/profile/profile_viewmodel.dart';
+import 'package:finlink_mobile/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +10,7 @@ class ProfileScreen extends BaseScreen {
 	@override
 	Widget mainContent(BuildContext context) {
 		return ChangeNotifierProvider(
-			create: (_) => ProfileViewmodel(),
+			create: (_) => servicelocator<ProfileViewmodel>()..loadProfile(),
 			child: Consumer<ProfileViewmodel>(
 				builder: (context, viewmodel, child) {
 					return SafeArea(
@@ -21,6 +22,18 @@ class ProfileScreen extends BaseScreen {
 									style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
 								),
 								const SizedBox(height: 16),
+								if (viewmodel.isLoading)
+									const Center(
+										child: Padding(
+											padding: EdgeInsets.symmetric(vertical: 24),
+											child: CircularProgressIndicator(),
+										),
+									),
+								if (viewmodel.errorMessage != null)
+									_CenteredMessageCard(
+										message: viewmodel.errorMessage!,
+										onRetry: viewmodel.loadProfile,
+									),
 								_ProfileHeaderCard(viewmodel: viewmodel),
 								const SizedBox(height: 16),
 								_SectionCard(
@@ -219,6 +232,42 @@ class _DetailTile extends StatelessWidget {
 						),
 					),
 				],
+			),
+		);
+	}
+}
+
+class _CenteredMessageCard extends StatelessWidget {
+	const _CenteredMessageCard({required this.message, required this.onRetry});
+
+	final String message;
+	final VoidCallback onRetry;
+
+	@override
+	Widget build(BuildContext context) {
+		return Card(
+			elevation: 0,
+			shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+			child: Padding(
+				padding: const EdgeInsets.all(16),
+				child: Column(
+					children: [
+						Text(
+							message,
+							textAlign: TextAlign.center,
+							style: TextStyle(color: Colors.grey.shade700),
+						),
+						const SizedBox(height: 12),
+						SizedBox(
+							height: 40,
+							child: OutlinedButton.icon(
+								onPressed: onRetry,
+								icon: const Icon(Icons.refresh),
+								label: const Text('Retry'),
+							),
+						),
+					],
+				),
 			),
 		);
 	}

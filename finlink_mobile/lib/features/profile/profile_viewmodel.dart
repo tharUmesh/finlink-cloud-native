@@ -1,17 +1,34 @@
 import 'package:finlink_mobile/features/base_viewmodel.dart';
+import 'package:finlink_mobile/models/user/user_profile_models.dart';
+import 'package:finlink_mobile/services/auth/auth_session.dart';
+import 'package:finlink_mobile/services/user/user_service.dart';
 import 'package:finlink_mobile/utils/named_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ProfileViewmodel extends BaseViewmodel {
-	final String fullName = 'Nimal Perera';
-	final String email = 'nimal.perera@finlink.app';
-	final String phone = '+94 77 123 4567';
-	final String nic = '981234567V';
-	final String accountTier = 'Premium';
+	ProfileViewmodel(this._authSession, this._userService);
+
+	final AuthSession _authSession;
+	final UserService _userService;
+
+	UserProfile? _profile;
+	bool _isLoading = false;
+	String? _errorMessage;
 
 	bool _notificationsEnabled = true;
 	bool _biometricEnabled = false;
+
+	UserProfile? get profile => _profile;
+	bool get isLoading => _isLoading;
+	String? get errorMessage => _errorMessage;
+
+	String get fullName =>
+			_profile?.fullName ?? _authSession.user?.name ?? 'FinLink Member';
+	String get email => _authSession.user?.email ?? 'Not provided';
+	String get phone => _profile?.phoneNumber ?? _authSession.user?.phone ?? '—';
+	String get nic => _profile?.nationalId ?? _authSession.user?.nic ?? '—';
+	String get accountTier => _mapRoleToTier(_profile?.role ?? _authSession.user?.role);
 
 	bool get notificationsEnabled => _notificationsEnabled;
 	bool get biometricEnabled => _biometricEnabled;
@@ -25,6 +42,32 @@ class ProfileViewmodel extends BaseViewmodel {
 		}
 		return (parts.first.characters.first + parts.last.characters.first)
 				.toUpperCase();
+	}
+
+	Future<void> loadProfile() async {
+		if (_isLoading) {
+			return;
+		}
+		if (!_authSession.isAuthenticated) {
+			_errorMessage = 'Please login to view your profile.';
+			notifyListeners();
+			return;
+		}
+
+		_isLoading = true;
+		_errorMessage = null;
+		notifyListeners();
+
+		try {
+			_profile = await _userService.getProfile();
+		} on UserServiceException catch (error) {
+			_errorMessage = error.message;
+		} catch (_) {
+			_errorMessage = 'Unable to load profile right now.';
+		} finally {
+			_isLoading = false;
+			notifyListeners();
+		}
 	}
 
 	void toggleNotifications(bool value) {
@@ -63,7 +106,21 @@ class ProfileViewmodel extends BaseViewmodel {
 		);
 
 		if (shouldLogout == true) {
+			_authSession.clear();
 			context.go(NamedRoutes.login.path);
+		}
+	}
+
+	String _mapRoleToTier(String? role) {
+		switch (role) {
+			case 'admin':
+				return 'Admin';
+			case 'lender':
+				return 'Lender';
+			case 'user':
+				return 'Standard';
+			default:
+				return 'Standard';
 		}
 	}
 }

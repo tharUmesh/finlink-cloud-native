@@ -1,6 +1,6 @@
 import 'package:finlink_mobile/features/base_viewmodel.dart';
-import 'package:finlink_mobile/models/auth_models.dart';
-import 'package:finlink_mobile/services/auth_service.dart';
+import 'package:finlink_mobile/models/auth/auth_models.dart';
+import 'package:finlink_mobile/services/auth/auth_service.dart';
 import 'package:finlink_mobile/utils/named_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
