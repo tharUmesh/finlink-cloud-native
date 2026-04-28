@@ -15,13 +15,16 @@ class HomeTab extends BaseScreen {
 
   @override
   Widget mainContent(BuildContext context) {
-    final viewmodel = context.read<HomeViewmodel>();
+    final viewmodel = context.watch<HomeViewmodel>();
 
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const WalletCard(),
+          WalletCard(
+            balanceText: viewmodel.walletBalanceText,
+            statusText: viewmodel.walletStatusMessage,
+          ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,

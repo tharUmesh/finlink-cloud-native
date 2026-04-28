@@ -5,6 +5,8 @@ import 'package:finlink_mobile/features/base_screen.dart';
 import 'package:finlink_mobile/features/home/home_tab.dart';
 import 'package:finlink_mobile/features/home/home_viewmodel.dart';
 import 'package:finlink_mobile/features/profile/profile_screen.dart';
+import 'package:finlink_mobile/service_locator.dart';
+import 'package:finlink_mobile/services/wallet/wallet_service.dart';
 
 
 class HomeScreen extends BaseScreen {
@@ -13,7 +15,11 @@ class HomeScreen extends BaseScreen {
   @override
   Widget mainContent(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => HomeViewmodel(),
+      create: (_) {
+        final viewmodel = HomeViewmodel(servicelocator<WalletService>());
+        viewmodel.startWalletStream();
+        return viewmodel;
+      },
       child: Consumer<HomeViewmodel>(
         builder: (context, viewmodel, child) {
           return Scaffold(

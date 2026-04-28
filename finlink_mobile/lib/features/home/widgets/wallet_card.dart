@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class WalletCard extends StatelessWidget {
-  const WalletCard({super.key});
+  const WalletCard({
+    super.key,
+    required this.balanceText,
+    this.statusText,
+  });
+
+  final String balanceText;
+  final String? statusText;
 
   @override
   Widget build(BuildContext context) {
@@ -96,8 +103,8 @@ class WalletCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-                const Text(
-                  'LKR 4,003.46',
+              Text(
+                balanceText,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 34,
@@ -105,6 +112,17 @@ class WalletCard extends StatelessWidget {
                   letterSpacing: 0.3,
                 ),
               ),
+              if (statusText != null && statusText!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  statusText!,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
               const SizedBox(height: 36),
               // Container(
               //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
