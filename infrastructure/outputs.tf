@@ -74,3 +74,27 @@ output "subscription_id" {
   value     = var.subscription_id
   sensitive = true
 }
+
+output "internal_fqdn_user_service" {
+  value = "https://user-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
+}
+
+output "internal_fqdn_wallet_service" {
+  value = "https://wallet-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
+}
+
+output "internal_fqdn_transaction_service" {
+  value = "https://transaction-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
+}
+
+output "internal_fqdn_loan_service" {
+  value = "https://loan-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
+}
+
+output "internal_fqdn_fraud_service" {
+  value = "https://fraud-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
+}
+
+output "internal_fqdn_notification_service" {
+  value = "https://notification-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
+}

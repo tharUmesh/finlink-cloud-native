@@ -60,3 +60,46 @@ resource "azurerm_key_vault_secret" "servicebus_connection_string" {
   value        = azurerm_servicebus_namespace.finlink.default_primary_connection_string
   key_vault_id = azurerm_key_vault.finlink.id
 }
+
+# PostgreSQL connection strings per service
+resource "azurerm_key_vault_secret" "db_url_users" {
+  name         = "db-url-users"
+  value        = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_users"
+  key_vault_id = azurerm_key_vault.finlink.id
+}
+
+resource "azurerm_key_vault_secret" "db_url_wallets" {
+  name         = "db-url-wallets"
+  value        = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_wallets"
+  key_vault_id = azurerm_key_vault.finlink.id
+}
+
+resource "azurerm_key_vault_secret" "db_url_transactions" {
+  name         = "db-url-transactions"
+  value        = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_transactions"
+  key_vault_id = azurerm_key_vault.finlink.id
+}
+
+resource "azurerm_key_vault_secret" "db_url_loans" {
+  name         = "db-url-loans"
+  value        = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_loans"
+  key_vault_id = azurerm_key_vault.finlink.id
+}
+
+resource "azurerm_key_vault_secret" "db_url_fraud" {
+  name         = "db-url-fraud"
+  value        = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_fraud"
+  key_vault_id = azurerm_key_vault.finlink.id
+}
+
+resource "azurerm_key_vault_secret" "db_url_notifications" {
+  name         = "db-url-notifications"
+  value        = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_notifications"
+  key_vault_id = azurerm_key_vault.finlink.id
+}
+
+resource "azurerm_key_vault_secret" "cosmos_key" {
+  name         = "cosmos-primary-key"
+  value        = azurerm_cosmosdb_account.finlink.primary_key
+  key_vault_id = azurerm_key_vault.finlink.id
+}
