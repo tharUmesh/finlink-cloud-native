@@ -46,7 +46,7 @@ class ActionAvatar extends StatelessWidget {
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1E1E1E),
+              color: Color(0xFF8A8F99),
             ),
           ),
         ],

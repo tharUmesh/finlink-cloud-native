@@ -24,7 +24,7 @@ class TransactionCard extends StatelessWidget {
   String get _actionName => _isReceived ? 'Deposit' : 'Send';
 
   String get _formattedAmount =>
-      '${_isReceived ? '+' : '-'}\$${amount.toStringAsFixed(2)}';
+      '${_isReceived ? '+' : '-'} LKR ${amount.toStringAsFixed(2)}';
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +62,7 @@ class TransactionCard extends StatelessWidget {
                   _title,
                   style: const TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: Color(0xFF26262A),
                   ),
                 ),
@@ -83,8 +83,8 @@ class TransactionCard extends StatelessWidget {
               Text(
                 _formattedAmount,
                 style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
                   color: Color(0xFF2C2E34),
                 ),
               ),

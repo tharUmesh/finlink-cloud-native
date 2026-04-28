@@ -1,4 +1,5 @@
 import 'package:finlink_mobile/features/auth/register/register_viewmodel.dart';
+import 'package:finlink_mobile/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,10 +9,10 @@ class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => RegisterViewmodel(),
+      create: (_) => servicelocator<RegisterViewmodel>(),
       child: Builder(
         builder: (context) {
-          final viewmodel = context.read<RegisterViewmodel>();
+          final viewmodel = context.watch<RegisterViewmodel>();
 
           return Scaffold(
             body: SafeArea(
@@ -57,18 +58,6 @@ class RegisterScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
-                            controller: viewmodel.emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              hintText: 'Enter your email',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: viewmodel.validateEmail,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
                             controller: viewmodel.phoneController,
                             keyboardType: TextInputType.phone,
                             textInputAction: TextInputAction.next,
@@ -106,13 +95,24 @@ class RegisterScreen extends StatelessWidget {
                           SizedBox(
                             height: 52,
                             child: ElevatedButton(
-                              onPressed: viewmodel.handleRegister,
-                              child: const Text('Register'),
+                              onPressed: viewmodel.isLoading
+                                  ? null
+                                  : () => viewmodel.handleRegister(context),
+                              child: viewmodel.isLoading
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text('Register'),
                             ),
                           ),
                           const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
                                 'Already have an account? ',

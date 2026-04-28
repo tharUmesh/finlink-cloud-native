@@ -67,7 +67,7 @@ class HomeTab extends BaseScreen {
             'Recent Transactions',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 12),

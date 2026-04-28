@@ -1,4 +1,5 @@
 import 'package:finlink_mobile/features/auth/login/login_viewmodel.dart';
+import 'package:finlink_mobile/service_locator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,10 +9,10 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => LoginViewmodel(),
+      create: (_) => servicelocator<LoginViewmodel>(),
       child: Builder(
         builder: (context) {
-          final viewmodel = context.read<LoginViewmodel>();
+          final viewmodel = context.watch<LoginViewmodel>();
 
           return Scaffold(
             body: SafeArea(
@@ -46,14 +47,14 @@ class LoginScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 32),
                           TextFormField(
-                            controller: viewmodel.emailController,
-                            keyboardType: TextInputType.emailAddress,
+                            controller: viewmodel.phoneController,
+                            keyboardType: TextInputType.phone,
                             decoration: const InputDecoration(
-                              labelText: 'Email',
-                              hintText: 'Enter your email',
+                              labelText: 'Phone Number',
+                              hintText: 'Enter your phone number',
                               border: OutlineInputBorder(),
                             ),
-                           // validator: viewmodel.validateEmail,
+                            validator: viewmodel.validatePhoneNumber,
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -64,19 +65,30 @@ class LoginScreen extends StatelessWidget {
                               hintText: 'Enter your password',
                               border: OutlineInputBorder(),
                             ),
-                           // validator: viewmodel.validatePassword,
+                            validator: viewmodel.validatePassword,
                           ),
                           const SizedBox(height: 24),
                           SizedBox(
                             height: 52,
                             child: ElevatedButton(
-                              onPressed: () => viewmodel.handleLogin(context),
-                              child: const Text('Login'),
+                              onPressed: viewmodel.isLoading
+                                  ? null
+                                  : () => viewmodel.handleLogin(context),
+                              child: viewmodel.isLoading
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text('Login'),
                             ),
                           ),
                           const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
                                 "Don't have an account? ",

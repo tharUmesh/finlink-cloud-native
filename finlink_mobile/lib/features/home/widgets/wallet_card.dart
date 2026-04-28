@@ -23,6 +23,24 @@ class WalletCard extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
+            top: 4,
+            right: 0,
+            child: Row(
+              children: List.generate(
+                3,
+                (_) => Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(left: 6),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF5DE58A),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
             right: -18,
             bottom: -24,
             child: Container(
@@ -53,12 +71,19 @@ class WalletCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'finLink',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: const Color(0xFF5DE58A),
+                ),
+                child: const Text(
+                  'finLink',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -72,7 +97,7 @@ class WalletCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
                 const Text(
-                  '\$4,003.46',
+                  'LKR 4,003.46',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 34,
@@ -80,22 +105,22 @@ class WalletCard extends StatelessWidget {
                   letterSpacing: 0.3,
                 ),
               ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: const Color(0xFF5DE58A),
-                ),
-                child: const Text(
-                  '+4.12%',
-                  style: TextStyle(
-                    color: Color(0xFF126835),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
+              const SizedBox(height: 36),
+              // Container(
+              //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(16),
+              //     color: const Color(0xFF5DE58A),
+              //   ),
+              //   child: const Text(
+              //     '+4.12%',
+              //     style: TextStyle(
+              //       color: Color(0xFF126835),
+              //       fontSize: 12,
+              //       fontWeight: FontWeight.w700,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ],
