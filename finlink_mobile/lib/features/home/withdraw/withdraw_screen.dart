@@ -1,5 +1,7 @@
 import 'package:finlink_mobile/features/home/withdraw/withdraw_viewmodel.dart';
 import 'package:finlink_mobile/features/home/widgets/success_widget.dart';
+import 'package:finlink_mobile/service_locator.dart';
+import 'package:finlink_mobile/services/cards/linked_cards_store.dart';
 import 'package:finlink_mobile/utils/named_routes.dart';
 import 'package:finlink_mobile/utils/bank_names.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +42,7 @@ class WithdrawScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => WithdrawViewmodel(),
+      create: (_) => WithdrawViewmodel(servicelocator<LinkedCardsStore>()),
       child: Consumer<WithdrawViewmodel>(
         builder: (context, viewmodel, child) {
           return WillPopScope(
@@ -75,7 +77,7 @@ class WithdrawScreen extends StatelessWidget {
                                   labelText: 'Bank',
                                   border: OutlineInputBorder(),
                                 ),
-                                items: BankName.values
+                                items: viewmodel.availableBanks
                                     .map(
                                       (bank) => DropdownMenuItem<BankName>(
                                         value: bank,
@@ -97,6 +99,16 @@ class WithdrawScreen extends StatelessWidget {
                                 onChanged: viewmodel.setSelectedBank,
                                 validator: (_) => viewmodel.validateBank(viewmodel.selectedBank),
                               ),
+                              if (!viewmodel.hasLinkedCards) ...[
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'Add a card before making a withdraw.',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF8A8F99),
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 12),
                               TextFormField(
                                 controller: viewmodel.amountController,
@@ -128,7 +140,9 @@ class WithdrawScreen extends StatelessWidget {
                           width: double.infinity,
                           height: 48,
                           child: ElevatedButton(
-                            onPressed: () => _handleWithdraw(context, viewmodel),
+                            onPressed: viewmodel.hasLinkedCards
+                                ? () => _handleWithdraw(context, viewmodel)
+                                : null,
                             child: const Text('Withdraw'),
                           ),
                         ),

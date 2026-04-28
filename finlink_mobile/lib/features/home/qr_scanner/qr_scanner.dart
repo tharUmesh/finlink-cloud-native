@@ -5,12 +5,24 @@ import 'package:provider/provider.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 class QrScannerScreen extends BaseScreen {
-	const QrScannerScreen({super.key});
+	const QrScannerScreen({
+		super.key,
+		this.returnOnScan = false,
+	});
+
+	final bool returnOnScan;
 
 	@override
 	Widget mainContent(BuildContext context) {
 		return ChangeNotifierProvider(
-			create: (_) => QrScannerViewmodel(),
+			create: (_) => QrScannerViewmodel(
+				returnOnScan: returnOnScan,
+				onScan: (value) {
+					if (returnOnScan) {
+						Navigator.of(context).pop(value);
+					}
+				},
+			),
 			child: Consumer<QrScannerViewmodel>(
 				builder: (context, viewmodel, child) {
 					return SafeArea(

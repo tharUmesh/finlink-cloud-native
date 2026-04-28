@@ -1,14 +1,18 @@
+import 'package:finlink_mobile/utils/bank_names.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class WalletCard extends StatelessWidget {
   const WalletCard({
     super.key,
     required this.balanceText,
     this.statusText,
+    this.linkedBank,
   });
 
   final String balanceText;
   final String? statusText;
+  final BankName? linkedBank;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +51,32 @@ class WalletCard extends StatelessWidget {
               ),
             ),
           ),
+          if (linkedBank != null)
+            Positioned(
+              top: 22,
+              right: 0,
+              child: Container(
+                width: 26,
+                height: 26,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: linkedBank!.isSvg
+                    ? SvgPicture.asset(
+                        linkedBank!.logoAssetPath,
+                        width: 18,
+                        height: 18,
+                      )
+                    : Image.asset(
+                        linkedBank!.logoAssetPath,
+                        width: 18,
+                        height: 18,
+                        fit: BoxFit.contain,
+                      ),
+              ),
+            ),
           Positioned(
             right: -18,
             bottom: -24,

@@ -4,6 +4,7 @@ import 'package:finlink_mobile/services/auth/auth_session.dart';
 import 'package:finlink_mobile/services/wallet/wallet_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class ReceiveScreen extends StatelessWidget {
   const ReceiveScreen({super.key});
@@ -91,10 +92,18 @@ class ReceiveScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: Image.asset(
-                            ReceiveViewmodel.qrAssetPath,
-                            fit: BoxFit.contain,
-                          ),
+                          child: viewmodel.hasWalletId
+                              ? QrImageView(
+                                  data: viewmodel.walletId ?? '',
+                                  size: 220,
+                                )
+                              : const SizedBox(
+                                  width: 220,
+                                  height: 220,
+                                  child: Center(
+                                    child: Text('QR unavailable'),
+                                  ),
+                                ),
                         ),
                       ),
                     ),

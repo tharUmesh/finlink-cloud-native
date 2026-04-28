@@ -6,6 +6,9 @@ import 'package:finlink_mobile/features/home/home_tab.dart';
 import 'package:finlink_mobile/features/home/home_viewmodel.dart';
 import 'package:finlink_mobile/features/profile/profile_screen.dart';
 import 'package:finlink_mobile/service_locator.dart';
+import 'package:finlink_mobile/services/cards/linked_cards_store.dart';
+import 'package:finlink_mobile/services/transaction/transaction_service.dart';
+import 'package:finlink_mobile/services/transaction/transaction_refresh_notifier.dart';
 import 'package:finlink_mobile/services/wallet/wallet_service.dart';
 
 
@@ -16,8 +19,14 @@ class HomeScreen extends BaseScreen {
   Widget mainContent(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) {
-        final viewmodel = HomeViewmodel(servicelocator<WalletService>());
+        final viewmodel = HomeViewmodel(
+          servicelocator<WalletService>(),
+          servicelocator<TransactionService>(),
+          servicelocator<TransactionRefreshNotifier>(),
+          servicelocator<LinkedCardsStore>(),
+        );
         viewmodel.startWalletStream();
+        viewmodel.startTransactionPolling();
         return viewmodel;
       },
       child: Consumer<HomeViewmodel>(

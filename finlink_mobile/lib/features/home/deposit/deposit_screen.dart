@@ -3,6 +3,7 @@ import 'package:finlink_mobile/features/home/widgets/success_widget.dart';
 import 'package:finlink_mobile/service_locator.dart';
 import 'package:finlink_mobile/services/auth/auth_session.dart';
 import 'package:finlink_mobile/services/transaction/transaction_service.dart';
+import 'package:finlink_mobile/services/transaction/transaction_refresh_notifier.dart';
 import 'package:finlink_mobile/services/wallet/wallet_service.dart';
 import 'package:finlink_mobile/utils/named_routes.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +48,7 @@ class DepositScreen extends StatelessWidget {
 				servicelocator<AuthSession>(),
 				servicelocator<WalletService>(),
 				servicelocator<TransactionService>(),
+				servicelocator<TransactionRefreshNotifier>(),
 			),
 			child: Consumer<DepositViewmodel>(
 				builder: (context, viewmodel, child) {

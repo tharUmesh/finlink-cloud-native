@@ -8,7 +8,7 @@ class UserService {
   UserService(
     this._session, {
     http.Client? client,
-    this.baseUrl = 'https://user-service.bravesmoke-f55615c7.eastasia.azurecontainerapps.io',
+    this.baseUrl = 'http://192.168.1.233:8001',
     this.profilePath = '/me',
   }) : _client = client ?? http.Client();
 

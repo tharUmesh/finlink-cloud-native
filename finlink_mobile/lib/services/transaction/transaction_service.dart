@@ -8,8 +8,7 @@ class TransactionService {
   TransactionService(
     this._session, {
     http.Client? client,
-    this.baseUrl =
-        'https://transaction-service.bravesmoke-f55615c7.eastasia.azurecontainerapps.io',
+    this.baseUrl = 'http://192.168.1.233:8003',
     this.transferPath = '/transfer',
     this.depositPath = '/deposit',
     this.transactionsPath = '/transactions',

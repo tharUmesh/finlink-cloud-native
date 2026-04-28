@@ -1,4 +1,5 @@
 import 'package:finlink_mobile/features/home/home_viewmodel.dart';
+import 'package:finlink_mobile/features/home/qr_scanner/qr_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -56,10 +57,27 @@ class SendBottomsheet extends StatelessWidget {
               const SizedBox(height: 8),
               TextFormField(
                 controller: viewmodel.receiverAddressController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Receiver's Address",
                   hintText: 'Enter receiver address',
                   border: OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    onPressed: () async {
+                      final value = await Navigator.of(context).push<String>(
+                        MaterialPageRoute(
+                          builder: (_) => const QrScannerScreen(
+                            returnOnScan: true,
+                          ),
+                        ),
+                      );
+                      if (value == null || value.trim().isEmpty) {
+                        return;
+                      }
+                      viewmodel.setReceiverAddress(value.trim());
+                    },
+                    icon: const Icon(Icons.qr_code_scanner_rounded),
+                    tooltip: 'Scan QR',
+                  ),
                 ),
                 validator: viewmodel.validateReceiverAddress,
               ),

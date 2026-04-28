@@ -16,6 +16,8 @@ class HomeTab extends BaseScreen {
   @override
   Widget mainContent(BuildContext context) {
     final viewmodel = context.watch<HomeViewmodel>();
+    final transactions = viewmodel.recentTransactions;
+    final transactionsError = viewmodel.transactionsError;
 
     return SafeArea(
       child: ListView(
@@ -24,6 +26,7 @@ class HomeTab extends BaseScreen {
           WalletCard(
             balanceText: viewmodel.walletBalanceText,
             statusText: viewmodel.walletStatusMessage,
+            linkedBank: viewmodel.linkedBank,
           ),
           const SizedBox(height: 24),
           Row(
@@ -58,7 +61,18 @@ class HomeTab extends BaseScreen {
               ActionAvatar(
                 iconName: 'deposit',
                 label: 'Deposit',
-                onTap: () => context.pushNamed(NamedRoutes.deposit.name),
+                onTap: () {
+                  if (!viewmodel.hasLinkedCard) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Add a card before making a deposit.'),
+                      ),
+                    );
+                    showAddCardBottomSheet(context, viewmodel);
+                    return;
+                  }
+                  context.pushNamed(NamedRoutes.deposit.name);
+                },
               ),
               ActionAvatar(
                 iconName: 'withdraw',
@@ -78,17 +92,40 @@ class HomeTab extends BaseScreen {
             ),
           ),
           const SizedBox(height: 12),
-          const TransactionCard(
-            type: TransactionCardType.transfer,
-            amount: 500,
-            time: 'Today 2:33 PM',
-          ),
-          const SizedBox(height: 8),
-          const TransactionCard(
-            type: TransactionCardType.received,
-            amount: 50,
-            time: 'Today 3:32 PM',
-          ),
+          if (viewmodel.isTransactionsLoading && transactions.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (transactionsError != null && transactionsError.isNotEmpty)
+            Text(
+              transactionsError,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF8A8F99),
+              ),
+            )
+          else if (transactions.isEmpty)
+            const Text(
+              'No transactions yet.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF8A8F99),
+              ),
+            )
+          else
+            ...transactions.map(
+              (record) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: TransactionCard(
+                  type: viewmodel.isTransactionIncoming(record)
+                      ? TransactionCardType.received
+                      : TransactionCardType.transfer,
+                  amount: record.amount,
+                  time: viewmodel.formatTransactionTime(record),
+                ),
+              ),
+            ),
         ],
       ),
     );

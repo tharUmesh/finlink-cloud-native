@@ -9,7 +9,7 @@ class WalletService {
   WalletService(
     this._session, {
     http.Client? client,
-    this.baseUrl = 'https://wallet-service.bravesmoke-f55615c7.eastasia.azurecontainerapps.io',
+    this.baseUrl = 'http://192.168.1.233:8002',
     this.walletsPath = '/wallets',
     this.userWalletPath = '/wallets/user',
   }) : _client = client ?? http.Client();

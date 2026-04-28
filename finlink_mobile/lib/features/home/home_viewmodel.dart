@@ -1,15 +1,31 @@
-import 'package:finlink_mobile/features/base_viewmodel.dart';
-import 'package:finlink_mobile/models/wallet/wallet_models.dart';
-import 'package:finlink_mobile/services/wallet/wallet_service.dart';
-import 'package:flutter/material.dart';
-import 'package:finlink_mobile/utils/bank_names.dart';
 import 'dart:async';
+
+import 'package:finlink_mobile/features/base_viewmodel.dart';
+import 'package:finlink_mobile/models/transaction/transaction_models.dart';
+import 'package:finlink_mobile/models/wallet/wallet_models.dart';
+import 'package:finlink_mobile/services/cards/linked_cards_store.dart';
+import 'package:finlink_mobile/services/transaction/transaction_service.dart';
+import 'package:finlink_mobile/services/transaction/transaction_refresh_notifier.dart';
+import 'package:finlink_mobile/services/wallet/wallet_service.dart';
+import 'package:finlink_mobile/utils/bank_names.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class HomeViewmodel extends BaseViewmodel {
-	HomeViewmodel(this._walletService);
+	HomeViewmodel(
+		this._walletService,
+		this._transactionService,
+		this._transactionRefresh,
+		this._linkedCardsStore,
+	) {
+		_transactionRefresh.addListener(_handleTransactionRefresh);
+		_linkedCardsStore.addListener(_handleLinkedCardsChanged);
+	}
 
 	final WalletService _walletService;
+	final TransactionService _transactionService;
+	final TransactionRefreshNotifier _transactionRefresh;
+	final LinkedCardsStore _linkedCardsStore;
 	final NumberFormat _currencyFormat = NumberFormat.currency(
 		locale: 'en_LK',
 		symbol: 'LKR',
@@ -21,6 +37,10 @@ class HomeViewmodel extends BaseViewmodel {
 	bool _isWalletLoading = false;
 	String? _walletError;
 	StreamSubscription<Wallet>? _walletSubscription;
+	Timer? _transactionTimer;
+	bool _isTransactionsLoading = false;
+	String? _transactionsError;
+	List<TransactionRecord> _recentTransactions = [];
 
 	final sendFormKey = GlobalKey<FormState>();
 	final receiverAddressController = TextEditingController();
@@ -37,6 +57,11 @@ class HomeViewmodel extends BaseViewmodel {
 	Wallet? get wallet => _wallet;
 	bool get isWalletLoading => _isWalletLoading;
 	String? get walletError => _walletError;
+	bool get isTransactionsLoading => _isTransactionsLoading;
+	String? get transactionsError => _transactionsError;
+	List<TransactionRecord> get recentTransactions => _recentTransactions;
+	BankName? get linkedBank => _linkedCardsStore.primaryBank;
+	bool get hasLinkedCard => _linkedCardsStore.hasCards;
 	String get walletBalanceText {
 		if (_isWalletLoading) {
 			return 'Loading...';
@@ -96,9 +121,83 @@ class HomeViewmodel extends BaseViewmodel {
 				);
 	}
 
+		void startTransactionPolling({Duration interval = const Duration(seconds: 15)}) {
+			_transactionTimer?.cancel();
+			loadRecentTransactions();
+			_transactionTimer = Timer.periodic(interval, (_) => loadRecentTransactions());
+		}
+
+		void _handleTransactionRefresh() {
+			loadRecentTransactions();
+		}
+
+		void _handleLinkedCardsChanged() {
+			notifyListeners();
+		}
+
+		Future<void> loadRecentTransactions({int limit = 5}) async {
+			if (_isTransactionsLoading) {
+				return;
+			}
+
+			_isTransactionsLoading = true;
+			_transactionsError = null;
+			notifyListeners();
+
+			try {
+				final response = await _transactionService.listMyTransactions(
+					limit: limit,
+					skip: 0,
+				);
+				_recentTransactions = response.transactions;
+			} on TransactionServiceException catch (error) {
+				_transactionsError = error.message;
+			} catch (_) {
+				_transactionsError = 'Unable to load transactions right now.';
+			} finally {
+				_isTransactionsLoading = false;
+				notifyListeners();
+			}
+		}
+
+		bool isTransactionIncoming(TransactionRecord record) {
+			final walletId = _wallet?.id;
+			if (walletId != null && walletId.isNotEmpty) {
+				return record.receiverWalletId == walletId;
+			}
+
+			switch (record.transactionType) {
+				case TransactionType.deposit:
+					return true;
+				case TransactionType.withdrawal:
+					return false;
+				default:
+					return record.isIncoming;
+			}
+		}
+
+		String formatTransactionTime(TransactionRecord record) {
+			final createdAt = record.createdAt;
+			if (createdAt == null) {
+				return 'Just now';
+			}
+
+			final now = DateTime.now();
+			final isToday = now.year == createdAt.year &&
+				now.month == createdAt.month &&
+				now.day == createdAt.day;
+			if (isToday) {
+				return 'Today ${DateFormat('h:mm a').format(createdAt)}';
+			}
+			return DateFormat('MMM d, h:mm a').format(createdAt);
+		}
+
 	@override
 	void dispose() {
 		_walletSubscription?.cancel();
+		_transactionTimer?.cancel();
+		_transactionRefresh.removeListener(_handleTransactionRefresh);
+		_linkedCardsStore.removeListener(_handleLinkedCardsChanged);
 		receiverAddressController.dispose();
 		amountController.dispose();
 		remarksController.dispose();
@@ -184,6 +283,11 @@ class HomeViewmodel extends BaseViewmodel {
 		remarksController.clear();
 	}
 
+	void setReceiverAddress(String value) {
+		receiverAddressController.text = value;
+		notifyListeners();
+	}
+
 	void setSelectedBank(BankName? bank) {
 		_selectedBank = bank;
 		notifyListeners();
@@ -253,6 +357,10 @@ class HomeViewmodel extends BaseViewmodel {
 	void submitAddCardForm(BuildContext context) {
 		if (!(addCardFormKey.currentState?.validate() ?? false)) {
 			return;
+		}
+		final selectedBank = _selectedBank;
+		if (selectedBank != null) {
+			_linkedCardsStore.addBank(selectedBank);
 		}
 		clearAddCardForm();
 		Navigator.pop(context);

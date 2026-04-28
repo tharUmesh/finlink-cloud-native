@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class AuthService {
   AuthService({
     http.Client? client,
-    this.baseUrl = 'https://user-service.bravesmoke-f55615c7.eastasia.azurecontainerapps.io',
+    this.baseUrl = 'http://192.168.1.233:8001',
     this.loginPath = '/login',
     this.registerPath = '/register',
   }) : _client = client ?? http.Client();

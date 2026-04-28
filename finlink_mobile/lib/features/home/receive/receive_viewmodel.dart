@@ -22,6 +22,7 @@ class ReceiveViewmodel extends BaseViewmodel {
   String? get errorMessage => _errorMessage;
   bool get hasWalletId => (_walletId ?? '').isNotEmpty;
   bool get hasError => _errorMessage != null && _errorMessage!.isNotEmpty;
+  String? get walletId => _walletId;
 
   String get walletIdLabel {
     if (_isLoading) {

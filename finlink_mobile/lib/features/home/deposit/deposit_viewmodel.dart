@@ -2,6 +2,7 @@ import 'package:finlink_mobile/features/base_viewmodel.dart';
 import 'package:finlink_mobile/models/transaction/transaction_models.dart';
 import 'package:finlink_mobile/services/auth/auth_session.dart';
 import 'package:finlink_mobile/services/transaction/transaction_service.dart';
+import 'package:finlink_mobile/services/transaction/transaction_refresh_notifier.dart';
 import 'package:finlink_mobile/services/wallet/wallet_service.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +11,7 @@ class DepositViewmodel extends BaseViewmodel {
     this._authSession,
     this._walletService,
     this._transactionService,
+    this._transactionRefresh,
   ) {
     _walletId = _authSession.walletId;
     walletIdController.text = _walletId ?? '';
@@ -19,6 +21,7 @@ class DepositViewmodel extends BaseViewmodel {
   final AuthSession _authSession;
   final WalletService _walletService;
   final TransactionService _transactionService;
+  final TransactionRefreshNotifier _transactionRefresh;
 
   final depositFormKey = GlobalKey<FormState>();
   final amountController = TextEditingController();
@@ -85,6 +88,7 @@ class DepositViewmodel extends BaseViewmodel {
       await _transactionService.deposit(
         DepositRequest(walletId: _walletId!, amount: amount),
       );
+      _transactionRefresh.notifyRefresh();
       return true;
     } on TransactionServiceException catch (error) {
       _errorMessage = error.message;
