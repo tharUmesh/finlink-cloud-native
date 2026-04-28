@@ -3,6 +3,8 @@ import 'package:finlink_mobile/features/auth/register/register_viewmodel.dart';
 import 'package:finlink_mobile/features/profile/profile_viewmodel.dart';
 import 'package:finlink_mobile/services/auth/auth_service.dart';
 import 'package:finlink_mobile/services/auth/auth_session.dart';
+import 'package:finlink_mobile/services/notification/notification_service.dart';
+import 'package:finlink_mobile/services/transaction/transaction_service.dart';
 import 'package:finlink_mobile/services/user/user_service.dart';
 import 'package:finlink_mobile/services/wallet/wallet_service.dart';
 import 'package:get_it/get_it.dart';
@@ -17,10 +19,17 @@ void setupServiceLocator() {
   servicelocator.registerLazySingleton<WalletService>(
     () => WalletService(servicelocator<AuthSession>()),
   );
+  servicelocator.registerLazySingleton<TransactionService>(
+    () => TransactionService(servicelocator<AuthSession>()),
+  );
+  servicelocator.registerLazySingleton<NotificationService>(
+    () => NotificationService(servicelocator<AuthSession>()),
+  );
   servicelocator.registerFactory<LoginViewmodel>(
     () => LoginViewmodel(
       servicelocator<AuthService>(),
       servicelocator<AuthSession>(),
+      servicelocator<WalletService>(),
     ),
   );
   servicelocator.registerFactory<RegisterViewmodel>(

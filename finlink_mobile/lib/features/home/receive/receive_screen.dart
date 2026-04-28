@@ -1,4 +1,7 @@
 import 'package:finlink_mobile/features/home/receive/receive_viewmodel.dart';
+import 'package:finlink_mobile/service_locator.dart';
+import 'package:finlink_mobile/services/auth/auth_session.dart';
+import 'package:finlink_mobile/services/wallet/wallet_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,7 +11,10 @@ class ReceiveScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => ReceiveViewmodel(),
+      create: (_) => ReceiveViewmodel(
+        servicelocator<AuthSession>(),
+        servicelocator<WalletService>(),
+      ),
       child: Consumer<ReceiveViewmodel>(
         builder: (context, viewmodel, child) {
           return Scaffold(
@@ -23,7 +29,7 @@ class ReceiveScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Your Wallet Address',
+                      'Your Wallet ID',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -41,17 +47,22 @@ class ReceiveScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              ReceiveViewmodel.dummyWalletAddress,
-                              style: const TextStyle(
+                              viewmodel.walletIdLabel,
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
+                                color: viewmodel.hasError
+                                    ? const Color(0xFFB91C1C)
+                                    : null,
                               ),
                             ),
                           ),
                           IconButton(
-                            onPressed: () => viewmodel.copyWalletAddress(context),
+                            onPressed: viewmodel.hasWalletId
+                                ? () => viewmodel.copyWalletId(context)
+                                : null,
                             icon: const Icon(Icons.copy_rounded),
-                            tooltip: 'Copy address',
+                            tooltip: 'Copy wallet ID',
                           ),
                         ],
                       ),

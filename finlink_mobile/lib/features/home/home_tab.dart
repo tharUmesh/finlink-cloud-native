@@ -55,7 +55,11 @@ class HomeTab extends BaseScreen {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              const ActionAvatar(iconName: 'deposit', label: 'Deposit'),
+              ActionAvatar(
+                iconName: 'deposit',
+                label: 'Deposit',
+                onTap: () => context.pushNamed(NamedRoutes.deposit.name),
+              ),
               ActionAvatar(
                 iconName: 'withdraw',
                 label: 'Withdraw',

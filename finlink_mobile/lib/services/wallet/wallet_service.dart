@@ -10,7 +10,6 @@ class WalletService {
     this._session, {
     http.Client? client,
     this.baseUrl = 'https://wallet-service.bravesmoke-f55615c7.eastasia.azurecontainerapps.io',
-    this.myWalletPath = '/wallets/me',
     this.walletsPath = '/wallets',
     this.userWalletPath = '/wallets/user',
   }) : _client = client ?? http.Client();
@@ -18,12 +17,18 @@ class WalletService {
   final AuthSession _session;
   final http.Client _client;
   final String baseUrl;
-  final String myWalletPath;
   final String walletsPath;
   final String userWalletPath;
 
   Future<Wallet> getMyWallet() {
-    return _getWallet(myWalletPath, requireAuth: true);
+    if (!_session.isAuthenticated) {
+      throw const WalletServiceException('No active session. Please login again.');
+    }
+    final userId = _session.user?.id;
+    if (userId == null || userId.isEmpty) {
+      throw const WalletServiceException('User ID is unavailable. Please login again.');
+    }
+    return _getWallet('$userWalletPath/$userId', requireAuth: true);
   }
 
   Stream<Wallet> watchMyWallet({Duration interval = const Duration(seconds: 10)}) {

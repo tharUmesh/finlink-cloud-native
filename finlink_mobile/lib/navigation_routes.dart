@@ -1,5 +1,6 @@
 import 'package:finlink_mobile/features/auth/register/register_screen.dart';
 import 'package:finlink_mobile/features/home/home_screen.dart';
+import 'package:finlink_mobile/features/home/deposit/deposit_screen.dart';
 import 'package:finlink_mobile/features/home/receive/receive_screen.dart';
 import 'package:finlink_mobile/features/home/qr_scanner/qr_scanner.dart';
 import 'package:finlink_mobile/features/home/withdraw/withdraw_screen.dart';
@@ -46,6 +47,11 @@ final router = GoRouter(
       path: NamedRoutes.withdraw.path,
       name: NamedRoutes.withdraw.name,
       builder: (context, state) => const WithdrawScreen(),
+    ),
+    GoRoute(
+      path: NamedRoutes.deposit.path,
+      name: NamedRoutes.deposit.name,
+      builder: (context, state) => const DepositScreen(),
     )
   ],
 );

@@ -2,16 +2,18 @@ import 'package:finlink_mobile/features/base_viewmodel.dart';
 import 'package:finlink_mobile/models/auth/auth_models.dart';
 import 'package:finlink_mobile/services/auth/auth_service.dart';
 import 'package:finlink_mobile/services/auth/auth_session.dart';
+import 'package:finlink_mobile/services/wallet/wallet_service.dart';
 import 'package:finlink_mobile/utils/named_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 
 class LoginViewmodel extends BaseViewmodel {
-	LoginViewmodel(this._authService, this._authSession);
+	LoginViewmodel(this._authService, this._authSession, this._walletService);
 
 	final AuthService _authService;
 	final AuthSession _authSession;
+	final WalletService _walletService;
 	final formKey = GlobalKey<FormState>();
 	final phoneController = TextEditingController();
 	final passwordController = TextEditingController();
@@ -59,6 +61,12 @@ class LoginViewmodel extends BaseViewmodel {
 				),
 			);
 			_authSession.applyAuthResponse(response);
+			try {
+				final wallet = await _walletService.getMyWallet();
+				_authSession.setWalletId(wallet.id);
+			} catch (_) {
+				_authSession.setWalletId(null);
+			}
 			if (!context.mounted) {
 				return;
 			}
