@@ -6,6 +6,6 @@ class Settings(BaseSettings):
     SERVICE_BUS_CONNECTION_STRING: str = ""
     SERVICE_NAME: str = "fraud-service"
 
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 settings = Settings()

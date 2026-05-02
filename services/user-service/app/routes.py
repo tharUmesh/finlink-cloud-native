@@ -42,24 +42,39 @@ async def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    print(f"[USER] ✅ User created: {new_user.id}")
 
-    # 3. Create wallet via wallet-service (inter-service HTTP call)
+    # 3. Create wallet — failure here must NEVER crash registration
     wallet_id = None
+    wallet_url = f"{settings.WALLET_SERVICE_URL}/wallets"
+    print(f"[USER] WALLET_SERVICE_URL = {settings.WALLET_SERVICE_URL}")
+    print(f"[USER] Calling: POST {wallet_url}")
+
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.post(
-                f"{WALLET_SERVICE_URL}/wallets",
+                wallet_url,
                 json={"user_id": str(new_user.id)}
             )
-            if response.status_code == 201:
-                wallet_id = response.json().get("id")
-    except httpx.RequestError:
-        # Wallet service is unreachable — user is still created, wallet created later
-        # In production this would trigger a retry/saga, but for MVP we log and continue
-        print(f"⚠️  Could not reach wallet-service for user {new_user.id} — wallet not created")
+            print(f"[USER] wallet-service status={response.status_code} body={response.text[:200]}")
 
+            if response.status_code in (200, 201):
+                data = response.json()
+                wallet_id = data.get("id")
+                print(f"[USER] ✅ Wallet created: {wallet_id}")
+            else:
+                print(f"[USER] ⚠️ wallet-service error: {response.status_code} — {response.text[:200]}")
+
+    except httpx.TimeoutException:
+        print(f"[USER] ⚠️ Timeout calling wallet-service at {wallet_url}")
+    except httpx.ConnectError as e:
+        print(f"[USER] ⚠️ Cannot connect to wallet-service at {wallet_url}: {e}")
+    except Exception as e:
+        print(f"[USER] ⚠️ Unexpected error calling wallet-service: {type(e).__name__}: {e}")
+
+    # 4. Always return success — wallet can be created later if it failed
     return RegisterResponse(
-        message="Registration successful",
+        message="Registration successful" if wallet_id else "Registration successful (wallet creation pending)",
         user=UserResponse.model_validate(new_user),
         wallet_id=wallet_id
     )

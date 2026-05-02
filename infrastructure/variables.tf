@@ -63,3 +63,9 @@ variable "cosmosdb_location" {
   type        = string
   default     = "Southeast Asia"
 }
+
+variable "apim_publisher_email" {
+  description = "Email for APIM publisher — use your email"
+  type        = string
+  default     = "your-email@example.com"
+}

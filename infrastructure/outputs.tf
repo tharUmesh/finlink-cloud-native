@@ -18,32 +18,32 @@ output "postgres_host" {
 
 output "postgres_user_db_url" {
   description = "DATABASE_URL for user-service"
-  value       = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_users"
+  value       = "postgresql://${var.postgresql_admin_username}:${local.pg_password_encoded}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_users"
   sensitive   = true
 }
 
 output "postgres_wallet_db_url" {
-  value     = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_wallets"
+  value     = "postgresql://${var.postgresql_admin_username}:${local.pg_password_encoded}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_wallets"
   sensitive = true
 }
 
 output "postgres_transaction_db_url" {
-  value     = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_transactions"
+  value     = "postgresql://${var.postgresql_admin_username}:${local.pg_password_encoded}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_transactions"
   sensitive = true
 }
 
 output "postgres_loan_db_url" {
-  value     = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_loans"
+  value     = "postgresql://${var.postgresql_admin_username}:${local.pg_password_encoded}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_loans"
   sensitive = true
 }
 
 output "postgres_fraud_db_url" {
-  value     = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_fraud"
+  value     = "postgresql://${var.postgresql_admin_username}:${local.pg_password_encoded}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_fraud"
   sensitive = true
 }
 
 output "postgres_notifications_db_url" {
-  value     = "postgresql://${var.postgresql_admin_username}:${var.postgresql_admin_password}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_notifications"
+  value     = "postgresql://${var.postgresql_admin_username}:${local.pg_password_encoded}@${azurerm_postgresql_flexible_server.finlink.fqdn}:5432/finlink_notifications"
   sensitive = true
 }
 
@@ -97,4 +97,33 @@ output "internal_fqdn_fraud_service" {
 
 output "internal_fqdn_notification_service" {
   value = "https://notification-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
+}
+
+output "external_url_user_service" {
+  value = "https://${azurerm_container_app.user_service.ingress[0].fqdn}"
+}
+
+output "external_url_transaction_service" {
+  value = "https://${azurerm_container_app.transaction_service.ingress[0].fqdn}"
+}
+
+output "external_url_wallet_service" {
+  value = "https://${azurerm_container_app.wallet_service.ingress[0].fqdn}"
+}
+
+output "external_url_loan_service" {
+  value = "https://${azurerm_container_app.loan_service.ingress[0].fqdn}"
+}
+
+output "external_url_fraud_service" {
+  value = "https://${azurerm_container_app.fraud_service.ingress[0].fqdn}"
+}
+
+output "external_url_notification_service" {
+  value = "https://${azurerm_container_app.notification_service.ingress[0].fqdn}"
+}
+
+output "apim_gateway_url" {
+  description = "Share with Person 1 — mobile app base URL"
+  value       = "${azurerm_api_management.finlink.gateway_url}/api"
 }

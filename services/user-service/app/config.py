@@ -5,8 +5,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-secret-key-change-in-production"
     SERVICE_BUS_CONNECTION_STRING: str = ""
     SERVICE_NAME: str = "user-service"
-    WALLET_SERVICE_URL: str = "http://wallet-service:8000"
+    WALLET_SERVICE_URL: str = "http://wallet-service:8000"  # local default
 
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 settings = Settings()

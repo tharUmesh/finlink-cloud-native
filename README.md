@@ -45,70 +45,78 @@ Architecture reference:
 
 ## Microservices
 
-- `user-service`: authentication and wallet profile setup
-- `transaction-service`: transfers and transaction recording
-- `fraud-service`: real-time fraud analysis (rule/ML)
-- `loan-service`: loan application and scoring
-- `notification-service`: status updates and alerts
-- `admin-service`: admin and compliance views
+The backend is built using **Python (FastAPI)** and consists of the following microservices:
+
+- `user-service`: Authentication, user profiles, and onboarding.
+- `wallet-service`: Ledger entries, transactions recording, and balance tracking.
+- `transaction-service`: Transfer handling and orchestrations.
+- `fraud-service`: Real-time fraud analysis using heuristics and/or ML models.
+- `loan-service`: Micro-loan application flow and simple credit scoring.
+- `notification-service`: Status updates and async alerts via Service Bus events.
 
 ## Repository Structure
 
 ```text
 finlink-cloud-native/
-|- mobile-frontend/
-|  |- README.md
-|- services/
-|  |- user-service/
-|  |  |- Dockerfile
-|  |- transaction-service/
-|  |  |- Dockerfile
-|  |- fraud-service/
-|  |  |- Dockerfile
-|  |- loan-service/
-|  |  |- Dockerfile
-|  |- notification-service/
-|  |  |- Dockerfile
-|  |- admin-service/
-|     |- Dockerfile
-|- infrastructure/
-|  |- main.tf
-|  |- aks.tf (placeholder, rename to aca.tf)
-|- datasets/
-|  |- README.md
-|- docs/
-|  |- SYSTEM_ARCHITECTURE.md
-|  |- azure_mobile_app_architecture_v2.png
-|  |- report.md
-|- .github/
-|  |- workflows/
-|     |- README.md
-|- README.md
+├── datasets/                  # ML/Fraud datasets and schema docs
+├── docs/                      # Architecture diagrams and reports
+├── infrastructure/            # Terraform IaC for Azure (ACA, APIM, Postgres, etc.)
+├── mobile-frontend/           # React Native + Expo App
+├── services/                  # Python FastAPI microservices
+│   ├── fraud-service/         
+│   ├── loan-service/          
+│   ├── notification-service/  
+│   ├── transaction-service/   
+│   ├── user-service/          
+│   └── wallet-service/        
+├── docker-compose.yml         # Local development environment
+└── README.md
 ```
 
-## Team Roles
+## How to Run It (Local Development)
 
-- Person 1: Mobile Frontend (React Native + Expo)
-- Person 2: Backend microservices and APIs
-- Person 3: DevOps/Cloud (Terraform, ACA, CI/CD, IAM/security)
-- Person 4: AI/Fraud model, testing, and documentation support
+To run the project locally, you will need **Docker**, **Docker Compose**, and **Node.js** (for Expo).
 
-## 8-Day Execution Plan
+### 1. Start the Backend Infrastructure
+The local environment spins up PostgreSQL, RabbitMQ/Redis (if configured), and all microservices in containers.
+```bash
+docker-compose up --build -d
+```
+You can verify the services are running by accessing their Swagger UI docs (e.g., `http://localhost:8001/docs` depending on mapping).
 
-1. Day 1: Project setup, repo alignment, cloud account, base infrastructure, mobile shell.
-2. Day 2: User service + wallet flow + schema setup.
-3. Day 3: Transfer flow, transaction history, API integration baseline.
-4. Day 4: Loan service + initial fraud logic.
-5. Day 5: Async event flow with Service Bus + notifications.
-6. Day 6: Security hardening, autoscaling demo, CI/CD.
-7. Day 7: End-to-end testing, report and demo prep.
-8. Day 8: Final integration, video, submission.
+### 2. Start the Mobile Frontend
+Go to the `mobile-frontend` directory, install dependencies, and run Expo:
+```bash
+cd mobile-frontend
+npm install
+npx expo start
+```
+You can run it on your physical device using the Expo Go app by scanning the QR code, or locally in an iOS Simulator / Android Emulator.
 
-## Cost and Feasibility
+## Cloud Deployment (Azure)
 
-- Target budget: zero out-of-pocket using student cloud credits.
-- Preferred platform: Azure for Students.
-- Fallback: run services locally with Docker for demos if cloud limits are reached.
+The project leverages **Terraform** to provision Azure Container Apps (ACA), Azure Service Bus, Azure API Management (APIM), and Azure PostgreSQL.
+
+### Prerequisites
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) (run `az login`)
+- [Terraform](https://developer.hashicorp.com/terraform/downloads)
+
+### Deployment Steps
+1. **Initialize Terraform:**
+   ```bash
+   cd infrastructure
+   terraform init
+   ```
+2. **Review the Deployment Plan:**
+   ```bash
+   terraform plan
+   ```
+3. **Apply the Plan:**
+   ```bash
+   terraform apply -auto-approve
+   ```
+4. **Deploy Application Code:**
+   Code is automatically tested, built into Docker images, and deployed to Azure via **GitHub Actions** workflows when pushing to the `main` branch.
 
 ## Datasets and Resources
 
@@ -116,27 +124,3 @@ finlink-cloud-native/
 - Lending datasets: Kaggle P2P lending datasets (for loan simulation)
 - Architecture and implementation notes: `docs/SYSTEM_ARCHITECTURE.md`
 
-## Azure Access Sharing (Recommended)
-
-To avoid sharing passwords, use Azure RBAC:
-
-1. One owner creates the Azure for Students subscription.
-2. Add teammates via Subscription -> Access control (IAM) -> Add role assignment.
-3. Assign `Contributor` role to each teammate account.
-4. Teammates use their own Microsoft accounts to access the same subscription.
-
-## Current Status
-
-- Repository scaffold is created.
-- Service folders and Dockerfiles are in place.
-- Base Terraform files exist.
-- System architecture document and diagram are available.
-- Implementation of frontend, microservices, infra modules, and CI/CD is the next phase.
-
-## Next Immediate Steps
-
-1. Initialize Expo app code in `mobile-frontend`.
-2. Add Express starter code to each service.
-3. Implement Terraform modules for network, ACA, data services, and API Management.
-4. Add first GitHub Actions workflow for build and lint.
-5. Add sample dataset files and schema docs under `datasets`.

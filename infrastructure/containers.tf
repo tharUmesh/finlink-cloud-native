@@ -3,8 +3,8 @@
 # Format: https://<app-name>.internal.<env-domain>
 # ─────────────────────────────────────────────────────────
 locals {
-  wallet_service_url = "https://wallet-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
-  user_service_url   = "https://user-service.internal.${azurerm_container_app_environment.finlink.default_domain}"
+  wallet_service_url = "http://wallet-service"
+  user_service_url   = "http://user-service"
 }
 
 # ─────────────────────────────────────────────────────────
@@ -65,10 +65,6 @@ resource "azurerm_container_app" "user_service" {
         secret_name = "sb-connection-string"
       }
       env {
-        name  = "SERVICE_BUS_QUEUE_NAME"
-        value = "transactions"
-      }
-      env {
         name  = "WALLET_SERVICE_URL"
         value = local.wallet_service_url
       }
@@ -82,7 +78,7 @@ resource "azurerm_container_app" "user_service" {
   }
 
   ingress {
-    external_enabled = false
+    external_enabled = true
     target_port      = 8000
     traffic_weight {
       percentage      = 100
@@ -160,7 +156,7 @@ resource "azurerm_container_app" "wallet_service" {
   }
 
   ingress {
-    external_enabled = false
+    external_enabled = true
     target_port      = 8000
     traffic_weight {
       percentage      = 100
@@ -250,7 +246,7 @@ resource "azurerm_container_app" "transaction_service" {
   }
 
   ingress {
-    external_enabled = false
+    external_enabled = true
     target_port      = 8000
     traffic_weight {
       percentage      = 100
@@ -336,7 +332,7 @@ resource "azurerm_container_app" "loan_service" {
   }
 
   ingress {
-    external_enabled = false
+    external_enabled = true
     target_port      = 8000
     traffic_weight {
       percentage      = 100
@@ -418,7 +414,7 @@ resource "azurerm_container_app" "fraud_service" {
   }
 
   ingress {
-    external_enabled = false
+    external_enabled = true
     target_port      = 8000
     traffic_weight {
       percentage      = 100
@@ -509,7 +505,7 @@ resource "azurerm_container_app" "notification_service" {
   }
 
   ingress {
-    external_enabled = false
+    external_enabled = true
     target_port      = 8000
     traffic_weight {
       percentage      = 100

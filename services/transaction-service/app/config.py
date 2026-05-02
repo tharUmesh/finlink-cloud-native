@@ -9,6 +9,6 @@ class Settings(BaseSettings):
     WALLET_SERVICE_URL: str = "http://wallet-service:8000"
     USER_SERVICE_URL: str = "http://user-service:8000"
 
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 settings = Settings()

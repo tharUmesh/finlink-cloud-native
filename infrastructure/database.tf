@@ -1,3 +1,6 @@
+locals {
+  pg_password_encoded = replace(var.postgresql_admin_password, "@", "%40")
+}
 # ─────────────────────────────────────────────────────────
 # PostgreSQL Flexible Server — one server, 6 databases
 # ─────────────────────────────────────────────────────────
