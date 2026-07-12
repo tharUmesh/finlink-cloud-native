@@ -9,7 +9,7 @@ class NotificationService {
   NotificationService(
     this._session, {
     http.Client? client,
-    this.baseUrl = 'http://192.168.1.233:8006',
+    this.baseUrl = 'https://notification-service.bravesmoke-f55615c7.eastasia.azurecontainerapps.io',
     this.notificationsPath = '/notifications',
   }) : _client = client ?? http.Client();
 

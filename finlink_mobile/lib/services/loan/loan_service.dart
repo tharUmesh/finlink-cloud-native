@@ -8,7 +8,7 @@ class LoanService {
   LoanService(
     this._session, {
     http.Client? client,
-    this.baseUrl = 'http://192.168.1.233:8004',
+    this.baseUrl = 'https://loan-service.bravesmoke-f55615c7.eastasia.azurecontainerapps.io',
     this.applyPath = '/loans/apply',
     this.openLoansPath = '/loans/open',
     this.loansPath = '/loans',
